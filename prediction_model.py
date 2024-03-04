@@ -10,8 +10,8 @@ test_data = pd.read_csv("./data/test/test.csv")
 sample_submission = pd.read_csv("./data/test/sample_submission.csv")
 
 # Prepare the data
-X_train = train_data.drop(['Id', 'Pawpularity'], axis=1)
-X_test = test_data.drop(['Id'], axis=1)
+X_train = train_data.drop(['Id', 'Pawpularity', 'Subject Focus'], axis=1)
+X_test = test_data.drop(['Id', 'Subject Focus'], axis=1)
 y_train = train_data['Pawpularity']
 y_test = sample_submission['Pawpularity']
 
@@ -24,7 +24,10 @@ model.fit(X_train, y_train)
 # Make predictions on the test set
 predictions = model.predict(X_test)
 
-def process_selection(selection):
-  print("selection:", selection)
+# method to process the selection from the GUI
+def process_selection(input):
+  print("Input data:", input)
 
-  model.predict(selection)
+  pawpularity_result = model.predict(input)
+
+  print(pawpularity_result)

@@ -1,10 +1,11 @@
 import tkinter as tk
 import numpy as np
 from tkinter import Label, Entry, Frame, Button, Checkbutton
-
 from paw_picture import PawPicture
 from prediction_model import process_selection
-
+import pandas as pd
+ 
+# tkinter application class
 class Application(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -25,111 +26,111 @@ class Application(tk.Tk):
         
         Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
 
+    # method to open the image view
     def open_image_view(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
         
         Label(self.main_frame, text="Image will be displayed here", width=40, height=10).pack(pady=20)
         
+        
+
         Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
         Button(self.main_frame, text="Back", command=self.initialize_main_view).pack(pady=10)
 
+    # method to open the form, to input the picture data
     def open_form(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-
+        
+        # emty array to store the input data
         arr = []
 
         Label(self.main_frame, text="Enter Data Below:").pack(pady=10)
         
-        Label(self.main_frame, text="Subject Focus:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
-        entry1.pack()
-        arr.append(subjectFocus)
-        
         Label(self.main_frame, text="Eyes:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
 
         Label(self.main_frame, text="Face:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
         
         Label(self.main_frame, text="Near:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
 
         Label(self.main_frame, text="Action:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
         
         Label(self.main_frame, text="Accessory:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
 
         Label(self.main_frame, text="Group:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
         
         Label(self.main_frame, text="Collage:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
 
         Label(self.main_frame, text="Human:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
 
         Label(self.main_frame, text="Occlusion:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
 
         Label(self.main_frame, text="Info:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
 
         Label(self.main_frame, text="Blur:").pack()
-        subjectFocus = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=subjectFocus)
+        input = tk.IntVar()
+        entry1 = Checkbutton(self.main_frame, variable=input)
         entry1.pack()
-        arr.append(subjectFocus)
+        arr.append(input)
         
         Button(self.main_frame, text="Cancel", command=self.open_image_view).pack(side=tk.LEFT, padx=(20, 10), pady=20)
         Button(self.main_frame, text="OK", command=lambda: self.submit_data(arr)).pack(side=tk.RIGHT, padx=(10, 20), pady=20)
 
+    # method to submit the data, when the form is filled and ok is clicked
     def submit_data(self, arr):
-        # Placeholder function for data submission logic
-        createdPicture = PawPicture(arr[0].get(), arr[1].get(), arr[2].get(), arr[3].get(), arr[4].get(), arr[5].get(), arr[6].get(), arr[7].get(), arr[8].get(), arr[9].get(), arr[10].get(), arr[11].get())
-        print(createdPicture)
         
+        # create a PawPicture object with the input data
+        createdPicture = PawPicture(arr[0].get(), arr[1].get(), arr[2].get(), arr[3].get(), arr[4].get(), arr[5].get(), arr[6].get(), arr[7].get(), arr[8].get(), arr[9].get(), arr[10].get())
+        
+        # transform to 2d array
         createdPictureList = [list(vars(createdPicture).keys()), list(vars(createdPicture).values())]
-        print(createdPictureList)
+        
+        # Create a DataFrame from the list
+        df = pd.DataFrame([createdPictureList[1]], columns=createdPictureList[0])
 
-        # newArr = np.array(createdPictureList).reshape(1, -1)
-        # print(newArr)
-        #print(list(vars(createdPicture).values()))
-
-        process_selection(createdPictureList)
+        # call the method from the prediction_model.py to process the selection
+        process_selection(df)
             
         self.open_image_view()  # Return to image view or wherever you want after submission
 

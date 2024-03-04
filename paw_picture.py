@@ -1,7 +1,6 @@
-# Class for picture
+# Class for pictures, to generate an objekt with the picture's attributes
 class PawPicture:
-  def __init__(self, Subject_Focus, Eyes, Face, Near, Action, Accessory, Group, Collage, Human, Occlusion, Info, Blur):
-    self.Subject_Focus = Subject_Focus
+  def __init__(self, Eyes, Face, Near, Action, Accessory, Group, Collage, Human, Occlusion, Info, Blur):
     self.Eyes = Eyes
     self.Face = Face
     self.Near = Near
