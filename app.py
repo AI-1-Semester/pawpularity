@@ -4,6 +4,7 @@ from tkinter import Label, Entry, Frame, Button, Checkbutton
 from paw_picture import PawPicture
 from prediction_model import process_selection
 import pandas as pd
+from PIL import Image, ImageTk
  
 # tkinter application class
 class Application(tk.Tk):
@@ -28,15 +29,19 @@ class Application(tk.Tk):
 
     # method to open the image view
     def open_image_view(self):
-        for widget in self.main_frame.winfo_children():
-            widget.destroy()
-        
-        Label(self.main_frame, text="Image will be displayed here", width=40, height=10).pack(pady=20)
-        
-        
+      for widget in self.main_frame.winfo_children():
+        widget.destroy()
 
-        Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
-        Button(self.main_frame, text="Back", command=self.initialize_main_view).pack(pady=10)
+      Label(self.main_frame, text="Image will be displayed here", width=40, height=10).pack(pady=20)
+
+      image = Image.open("./data/train/train_images/0007de18844b0dbbb5e1f607da0606e0.jpg")
+      displayImage = ImageTk.PhotoImage(image)
+      label = Label(image=displayImage, width=500, height=500)
+      label.image = displayImage
+      label.pack(pady=10)
+
+      Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
+      Button(self.main_frame, text="Back", command=self.initialize_main_view).pack(pady=10)
 
     # method to open the form, to input the picture data
     def open_form(self):
