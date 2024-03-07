@@ -34,9 +34,15 @@ predictions = model.predict(X_test)
 accuracy = accuracy_score(y_test, predictions)
 print(f'Accuracy: {accuracy}')
 
-def predict_human(input):
+def predict_human(imageId):
+    # Find the row in the dataframe that matches the imageId
+    row = train_data[train_data['Id'] == imageId]
+
+    # Prepare the row for prediction by dropping the 'Human' column
+    row = row.drop(['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur', 'Human'], axis=1)
+
     # Make a prediction
-    prediction = model.predict(input)
+    prediction = model.predict(row)
 
     # If the prediction is 1, there is a human in the image
     if prediction == 1:
