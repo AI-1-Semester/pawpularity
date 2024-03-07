@@ -164,11 +164,8 @@ class Application(tk.Tk):
 
         isHuman = predict_human(imageId)
 
-        print(isHuman)
-
         if isHuman:
             self.open_image_view("", isHuman)
-            print("There is a human in the image") 
         else:
             # call the method from the prediction_model.py to create the image path
             imagepath = create_image_path(imageId)

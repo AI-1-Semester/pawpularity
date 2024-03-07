@@ -29,13 +29,15 @@ model.fit(X_train, y_train)
 # Make predictions on the test set
 predictions = model.predict(X_test)
 
+print(f'\n prediction model initialized')
+
 # method to process the selection from the GUI
 def process_selection(input):
-  print("Input data:", input)
+  print("\n User input data:", input)
 
   pawpularity_result = model.predict(input)
 
-  print(pawpularity_result)
+  print("\n Pawpularity result: ", pawpularity_result)
   return pawpularity_result
 
 def find_imageId(pawpularity_result):
