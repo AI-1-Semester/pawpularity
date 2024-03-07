@@ -33,3 +33,13 @@ predictions = model.predict(X_test)
 # Check the accuracy of the model
 accuracy = accuracy_score(y_test, predictions)
 print(f'Accuracy: {accuracy}')
+
+def predict_human(input):
+    # Make a prediction
+    prediction = model.predict(input)
+
+    # If the prediction is 1, there is a human in the image
+    if prediction == 1:
+        return True
+    else:
+        return False
