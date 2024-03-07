@@ -1,3 +1,8 @@
+## Uge 10 - Opgave 2
+# Skriv en applikation, hvor man kan afprøve din model, 
+# så applikationen giver mulighed for at man kan inputte data og returnerer det billede,
+# der svarer til samt pawpularity score for billedet.
+
 import pandas as pd
 import sklearn as sk
 from sklearn.linear_model import LinearRegression
