@@ -1,0 +1,55 @@
+# model comparrison (5 folds - is testet 5 times)
+
+##################################################
+
+1.  with all parameters 
+
+### R2
+
+Logistic Regression R^2 scores: [-0.26816859 -1.0342961  -0.29369719 -0.19819155 -0.2309379 ]
+Linear Regression R^2 scores: [ 0.002148   -0.00329095 -0.00419659  0.00086155  0.00135547]
+Random Forest R^2 scores: [-0.58809418 -0.78432616 -0.92535588 -0.43615007 -0.55745764]
+SVM R^2 scores: [-0.21975987 -0.80312544 -0.28650901 -0.19453819 -0.27291523]
+
+Best: Linear (closed to positiv)
+
+### MSE => Største svingninger
+
+Logistic Regression Mean Squared Error scores: [-560.57589511 -859.03378719 -522.31079717 -507.01261352 -527.29717457]
+Linear Regression Mean Squared Error scores: [-441.08628798 -423.66537496 -405.4292811  -422.78365237 -427.78960412]
+Random Forest Mean Squared Error scores: [-701.99445285 -753.47755925 -777.33350151 -607.70433905 -667.16851665]
+SVM Mean Squared Error scores: [-539.17750883 -761.41603631 -519.4086781  -505.4667003  -545.2790111 ]
+
+Best: Linear (closed to zero)
+
+### MAE (Avarage magnetute off errors) => Gennemsnitlig svingning
+
+Logistic Regression Mean Absolute Error scores: [-16.18255169 -19.93847705 -15.64883956 -15.27598385 -15.70181635]
+Linear Regression Mean Absolute Error scores: [-15.69692345 -15.49739332 -15.22761056 -15.37058238 -15.32535215]
+Random Forest Mean Absolute Error scores: [-18.03681291 -18.93393848 -18.93895055 -16.78809284 -17.76286579]
+SVM Mean Absolute Error scores: [-15.85930408 -18.66868381 -15.62159435 -15.28304743 -15.92583249]
+
+Best: Linear (closed to zero)
+
+###
+
+##################################################
+
+2.  with [] parameters 
+
+### R2
+
+
+Best: 
+
+### MSE
+
+
+Best: 
+
+### MAE
+
+
+Best: 
+
+###
