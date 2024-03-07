@@ -6,8 +6,9 @@
 import tkinter as tk
 import numpy as np
 from tkinter import Label, Entry, Frame, Button, Checkbutton
+from human_prediction import predict_human
 from paw_picture import PawPicture
-from prediction_model import process_selection
+from prediction_model import create_image_path, find_imageId, process_selection
 import pandas as pd
 from PIL import Image, ImageTk
  
@@ -33,20 +34,36 @@ class Application(tk.Tk):
         Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
 
     # method to open the image view
-    def open_image_view(self):
-      for widget in self.main_frame.winfo_children():
-        widget.destroy()
+    def open_image_view(self, image_path, isHuman):
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+    
+        if isHuman and image_path == "":
+            print("isHuman = True")
+            Label(self.main_frame, text="There is a human in the image", width=40, height=10).pack(pady=20)
+        else:
+            print("isHuman = false")
+            Label(self.main_frame, text="Image:", width=40, height=10).pack(pady=20)
+            image = Image.open(image_path)
+            displayImage = ImageTk.PhotoImage(image)
+            self.label = Label(self.main_frame, image=displayImage, width=500, height=500)
+            self.label.image = displayImage
+            self.label.pack(pady=10)
 
-      Label(self.main_frame, text="Image will be displayed here", width=40, height=10).pack(pady=20)
+        Button(self.main_frame, text="Open Form", command=self.close_image_and_open_form).pack(pady=10)
+        Button(self.main_frame, text="Back", command=self.close_image_and_initialize_main_view).pack(pady=10)
 
-      image = Image.open("./data/train/train_images/0007de18844b0dbbb5e1f607da0606e0.jpg")
-      displayImage = ImageTk.PhotoImage(image)
-      label = Label(image=displayImage, width=500, height=500)
-      label.image = displayImage
-      label.pack(pady=10)
+    # method to close the image and open the form
+    def close_image_and_open_form(self):
+        if hasattr(self, 'label'):
+            self.label.destroy()
+        self.open_form()
 
-      Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
-      Button(self.main_frame, text="Back", command=self.initialize_main_view).pack(pady=10)
+    # method to close the image and initialize the main view
+    def close_image_and_initialize_main_view(self):
+        if hasattr(self, 'label'):
+            self.label.destroy()
+        self.initialize_main_view()
 
     # method to open the form, to input the picture data
     def open_form(self):
@@ -140,9 +157,25 @@ class Application(tk.Tk):
         df = pd.DataFrame([createdPictureList[1]], columns=createdPictureList[0])
 
         # call the method from the prediction_model.py to process the selection
-        process_selection(df)
-            
-        self.open_image_view()  # Return to image view or wherever you want after submission
+        pawpularity_score = process_selection(df)
+
+        # call the method from the prediction_model.py to find the imageId
+        imageId = find_imageId(pawpularity_score)
+
+        isHuman = predict_human(imageId)
+
+        if isHuman:
+            self.open_image_view("", isHuman)
+        else:
+            # call the method from the prediction_model.py to create the image path
+            imagepath = create_image_path(imageId)
+
+            #print(imageId)
+
+            # Return to image view or wherever you want after submission    
+            self.open_image_view(imagepath, isHuman)
+
+        
 
 if __name__ == "__main__":
     app = Application()
