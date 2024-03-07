@@ -7,7 +7,7 @@ import tkinter as tk
 import numpy as np
 from tkinter import Label, Entry, Frame, Button, Checkbutton
 from paw_picture import PawPicture
-from prediction_model import process_selection
+from prediction_model import create_image_path, find_imageId, process_selection
 import pandas as pd
 from PIL import Image, ImageTk
  
@@ -33,13 +33,13 @@ class Application(tk.Tk):
         Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
 
     # method to open the image view
-    def open_image_view(self):
+    def open_image_view(self, image_path):
       for widget in self.main_frame.winfo_children():
         widget.destroy()
 
       Label(self.main_frame, text="Image will be displayed here", width=40, height=10).pack(pady=20)
 
-      image = Image.open("./data/train/train_images/0007de18844b0dbbb5e1f607da0606e0.jpg")
+      image = Image.open(image_path)
       displayImage = ImageTk.PhotoImage(image)
       label = Label(image=displayImage, width=500, height=500)
       label.image = displayImage
@@ -140,9 +140,13 @@ class Application(tk.Tk):
         df = pd.DataFrame([createdPictureList[1]], columns=createdPictureList[0])
 
         # call the method from the prediction_model.py to process the selection
-        process_selection(df)
+        pawpularity_score = process_selection(df)
+
+        imageId = find_imageId(pawpularity_score)
+        imagepath = create_image_path(imageId)
+        print(imageId)
             
-        self.open_image_view()  # Return to image view or wherever you want after submission
+        self.open_image_view(imagepath)  # Return to image view or wherever you want after submission
 
 if __name__ == "__main__":
     app = Application()

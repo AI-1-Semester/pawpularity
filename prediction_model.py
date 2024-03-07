@@ -15,8 +15,8 @@ test_data = pd.read_csv("./data/test/test.csv")
 sample_submission = pd.read_csv("./data/test/sample_submission.csv")
 
 # Prepare the data
-X_train = train_data.drop(['Id', 'Pawpularity', 'Human', 'Action', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Occlusion', 'Subject Focus'], axis=1)
-X_test = test_data.drop(['Id', 'Human', 'Action', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Occlusion', 'Subject Focus'], axis=1)
+X_train = train_data.drop(['Id', 'Pawpularity', 'Subject Focus'], axis=1)
+X_test = test_data.drop(['Id', 'Subject Focus'], axis=1)
 y_train = train_data['Pawpularity']
 y_test = sample_submission['Pawpularity']
 
@@ -36,3 +36,15 @@ def process_selection(input):
   pawpularity_result = model.predict(input)
 
   print(pawpularity_result)
+  return pawpularity_result
+
+def find_imageId(pawpularity_result):
+  # Calculate the absolute difference between the pawpularity_result and all pawpularity scores in the train_data
+  differences = abs(train_data['Pawpularity'] - pawpularity_result)
+  # Find the index of the minimum difference
+  min_difference_index = differences.idxmin()
+  # Return the Id of the image with the closest pawpularity score
+  return train_data.loc[min_difference_index, 'Id']
+
+def create_image_path(imageId):
+  return f"./data/train/train_images/{imageId}.jpg"
