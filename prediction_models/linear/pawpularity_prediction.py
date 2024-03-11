@@ -32,7 +32,7 @@ predictions = model.predict(X_test)
 print(f'\n prediction model initialized')
 
 # method to process the selection from the GUI
-def process_selection(input):
+def process_pawpularity(input):
   print("\n User input data:", input)
 
   pawpularity_result = model.predict(input)

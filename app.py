@@ -6,9 +6,10 @@
 import tkinter as tk
 import numpy as np
 from tkinter import Label, Entry, Frame, Button, Checkbutton
-from human_prediction import predict_human
-from paw_picture import PawPicture
-from prediction_model import create_image_path, find_imageId, process_selection
+from prediction_models.bayes_model import process_occlusion
+from prediction_models.logical.human_prediction import predict_human
+from models.paw_picture import PawPicture
+from prediction_models.linear.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
 import pandas as pd
 from PIL import Image, ImageTk
  
@@ -34,13 +35,13 @@ class Application(tk.Tk):
         Button(self.main_frame, text="Open Form", command=self.open_form).pack(pady=10)
 
     # method to open the image view
-    def open_image_view(self, image_path, isHuman):
+    def open_image_view(self, image_path, isHuman, pawpularity_score, occlusion_probability):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
     
         if isHuman and image_path == "":
             print("isHuman = True")
-            Label(self.main_frame, text="There is a human in the image", width=40, height=10).pack(pady=20)
+            Label(self.main_frame, text=f"Is human {isHuman}", font=('Arial', 24)).pack(side=tk.LEFT, pady=20)
         else:
             print("isHuman = false")
             Label(self.main_frame, text="Image:", width=40, height=10).pack(pady=20)
@@ -49,6 +50,12 @@ class Application(tk.Tk):
             self.label = Label(self.main_frame, image=displayImage, width=500, height=500)
             self.label.image = displayImage
             self.label.pack(pady=10)
+            Label(self.main_frame, text=f"Is human {isHuman}", font=('Arial', 24)).pack(side=tk.LEFT, pady=20)
+
+        if pawpularity_score:
+            Label(self.main_frame, text=f"Pawpularity Score: {pawpularity_score}", font=('Arial', 24)).pack(side=tk.LEFT, pady=20)
+        if occlusion_probability:
+            Label(self.main_frame, text=f"Occlusion probability: {occlusion_probability}", font=('Arial', 24)).pack(side=tk.LEFT, pady=20)
 
         Button(self.main_frame, text="Open Form", command=self.close_image_and_open_form).pack(pady=10)
         Button(self.main_frame, text="Back", command=self.close_image_and_initialize_main_view).pack(pady=10)
@@ -157,7 +164,10 @@ class Application(tk.Tk):
         df = pd.DataFrame([createdPictureList[1]], columns=createdPictureList[0])
 
         # call the method from the prediction_model.py to process the selection
-        pawpularity_score = process_selection(df)
+        pawpularity_score = process_pawpularity(df)
+
+        occlusion_probability = process_occlusion(df)
+        print("\n Occlusion probability: ", occlusion_probability, "%")
 
         # call the method from the prediction_model.py to find the imageId
         imageId = find_imageId(pawpularity_score)
@@ -165,7 +175,7 @@ class Application(tk.Tk):
         isHuman = predict_human(imageId)
 
         if isHuman:
-            self.open_image_view("", isHuman)
+            self.open_image_view("", isHuman, pawpularity_score[0], occlusion_probability)
         else:
             # call the method from the prediction_model.py to create the image path
             imagepath = create_image_path(imageId)
@@ -173,7 +183,7 @@ class Application(tk.Tk):
             #print(imageId)
 
             # Return to image view or wherever you want after submission    
-            self.open_image_view(imagepath, isHuman)
+            self.open_image_view(imagepath, isHuman, pawpularity_score[0], occlusion_probability)
 
         
 
