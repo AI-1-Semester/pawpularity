@@ -76,80 +76,27 @@ class Application(tk.Tk):
     def open_form(self):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-        
-        # emty array to store the input data
+    
         arr = []
 
-        Label(self.main_frame, text="Enter Data Below:").pack(pady=10)
-        
-        Label(self.main_frame, text="Eyes:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
+        Label(self.main_frame, text="Enter Data Below:").grid(row=0, columnspan=2, pady=10)
 
-        Label(self.main_frame, text="Face:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-        
-        Label(self.main_frame, text="Near:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
+        # You create a list to hold the IntVar() references and the corresponding labels
+        entries = [("Eyes", 1), ("Face", 2), ("Near", 3), ("Action", 4),
+               ("Accessory", 5), ("Group", 6), ("Collage", 7), 
+               ("Human", 8), ("Occlusion", 9), ("Info", 10), ("Blur", 11)]
 
-        Label(self.main_frame, text="Action:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-        
-        Label(self.main_frame, text="Accessory:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
+    # Now loop through the entries and create a checkbutton for each
+        for label_text, row in entries:
+            Label(self.main_frame, text=f"{label_text}:").grid(row=row, column=0, sticky="e", pady=2)
+            input = tk.IntVar()
+            entry = Checkbutton(self.main_frame, variable=input)
+            entry.grid(row=row, column=1, sticky="w", pady=2)
+            arr.append(input)
 
-        Label(self.main_frame, text="Group:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-        
-        Label(self.main_frame, text="Collage:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-
-        Label(self.main_frame, text="Human:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-
-        Label(self.main_frame, text="Occlusion:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-
-        Label(self.main_frame, text="Info:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-
-        Label(self.main_frame, text="Blur:").pack()
-        input = tk.IntVar()
-        entry1 = Checkbutton(self.main_frame, variable=input)
-        entry1.pack()
-        arr.append(input)
-        
-        Button(self.main_frame, text="Cancel", command=self.open_image_view).pack(side=tk.LEFT, padx=(20, 10), pady=20)
-        Button(self.main_frame, text="OK", command=lambda: self.submit_data(arr)).pack(side=tk.RIGHT, padx=(10, 20), pady=20)
+    # Place Cancel and OK buttons
+        Button(self.main_frame, text="Cancel", command=self.open_image_view).grid(row=12, column=0, padx=(20, 10), pady=20, sticky="e")
+        Button(self.main_frame, text="OK", command=lambda: self.submit_data(arr)).grid(row=12, column=1, padx=(10, 20), pady=20, sticky="w")
 
     # method to submit the data, when the form is filled and ok is clicked
     def submit_data(self, arr):
