@@ -12,7 +12,7 @@ train_data = pd.read_csv("./data/train/train.csv")
 ##  Transform the data
 
 # Drop the columns not to be used
-correlated_data = train_data.drop(columns=['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur'], axis=1)
+correlated_data = train_data.drop(columns=['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur', 'Group'], axis=1)
 
 df = pd.DataFrame(correlated_data)
 
@@ -34,15 +34,20 @@ predictions = model.predict(X_test)
 accuracy = accuracy_score(y_test, predictions)
 print(f'\nHuman prediction model:  = Accuracy: {accuracy}')
 
-def predict_human(imageId):
+def predict_human(imageId, o_pred):
     # Find the row in the dataframe that matches the imageId
     row = train_data[train_data['Id'] == imageId]
 
     # Prepare the row for prediction by dropping the 'Human' column
-    row = row.drop(['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur', 'Human'], axis=1)
+    row = row.drop(['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur', 'Human', 'Group'], axis=1)
+
+    # swap the values of the prediction and the 'Occlusion' column
+    row['Occlusion'] = o_pred
 
     # Make a prediction
     prediction = model.predict(row)
+
+    print(row)
 
     # If the prediction is 1, there is a human in the image
     if prediction == 1:

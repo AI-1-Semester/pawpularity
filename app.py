@@ -3,7 +3,7 @@ from tkinter import Label, Frame, Button, Checkbutton
 import pandas as pd
 from PIL import Image, ImageTk
 from models.paw_picture import PawPicture
-from prediction_models.bayes_model import process_occlusion
+from prediction_models.occlusion_bagging_bayes import process_occlusion
 from prediction_models.logical.human_prediction import predict_human
 from prediction_models.linear.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
 from uiHelper import GridManager
@@ -141,16 +141,16 @@ class Application(tk.Tk):
             # call the method from the prediction_model.py to process the selection
             pawpularity_score = process_pawpularity(df)
 
-            occlusion_probability = process_occlusion(df)
-            print("\n Occlusion probability: ", occlusion_probability, "%")
+            occlusion_result = process_occlusion(df)
+            print("\n Occlusion probability: ", occlusion_result['occlusion_probability'], "%")
 
             # call the method from the prediction_model.py to find the imageId
             imageId = find_imageId(pawpularity_score)
 
-            isHuman = predict_human(imageId)
+            isHuman = predict_human(imageId, occlusion_result['o_pred'])
 
             if isHuman:
-                self.open_image_view("", isHuman, pawpularity_score[0], occlusion_probability)
+                self.open_image_view("", isHuman, pawpularity_score[0], occlusion_result['occlusion_probability'])
             else:
                 # call the method from the prediction_model.py to create the image path
                 imagepath = create_image_path(imageId)
@@ -158,7 +158,7 @@ class Application(tk.Tk):
                 #print(imageId)
 
                 # Return to image view or wherever you want after submission    
-                self.open_image_view(imagepath, isHuman, pawpularity_score[0], occlusion_probability)
+                self.open_image_view(imagepath, isHuman, pawpularity_score[0], occlusion_result['occlusion_probability'])
 
 if __name__ == "__main__":
     app = Application()
