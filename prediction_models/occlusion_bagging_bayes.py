@@ -34,7 +34,7 @@ def process_occlusion(input):
   transformed_input = input.drop(['Occlusion'], axis=1)
   occlusion_result = model.predict_proba(transformed_input)
 
-  result = (occlusion_result[0 , 0] * 100)
+  result = (occlusion_result[0 , 1] * 100)
   o_pred = model.predict(transformed_input)[0]
 
   return {"occlusion_probability": result, "o_pred": o_pred}
