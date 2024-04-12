@@ -14,7 +14,7 @@ y_test = loaded_data['y_test']
 # Create a Gaussian Naive Bayes model
 gnb = GaussianNB()
 
-# Create a Bagging Classifier model
+# Create a Bagging Classifier model (with hyperparameters tuning)
 model = BaggingClassifier(gnb, n_estimators=100, max_samples=0.7)
 
 # Fit the model with the training data
