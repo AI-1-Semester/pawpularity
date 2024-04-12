@@ -4,8 +4,8 @@ import pandas as pd
 from PIL import Image, ImageTk
 from models.paw_picture import PawPicture
 from prediction_models.occlusion_bagging_bayes import process_occlusion
-from prediction_models.logistic.human_prediction import predict_human
-from prediction_models.linear.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
+from prediction_models.human_prediction import predict_human
+from prediction_models.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
 from uiHelper import GridManager
 
 # Assuming GridManager is in the same file or imported appropriately

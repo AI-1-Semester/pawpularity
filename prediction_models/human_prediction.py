@@ -7,6 +7,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
+from metrics.roc_curve import create_roc_curve
+
 train_data = pd.read_csv("./data/train/train.csv")
 
 ##  Transform the data
@@ -48,6 +50,9 @@ def predict_human(imageId, o_pred):
 
     # Make a prediction
     prediction = model.predict(row)
+
+    # create a roc curve - WIP
+    # create_roc_curve(y_test, predictions, 'Logistic Regression', 'Human')
 
     print(row)
 

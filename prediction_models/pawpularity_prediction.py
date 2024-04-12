@@ -3,10 +3,9 @@
 # så applikationen giver mulighed for at man kan inputte data og returnerer det billede,
 # der svarer til samt pawpularity score for billedet.
 
-from sklearn.linear_model import LinearRegression
-
 from data.load_data import load_pawpurarity_data
 from data.load_data import load_train_data
+from prediction_models.models import train_linear_regression_model
 
 # Load clean data
 train_data = load_train_data()
@@ -17,22 +16,14 @@ x_train = loaded_data['x_train']
 x_test = loaded_data['x_test']
 y_train = loaded_data['y_train']
 
-# Create a Linear Regression model
-model = LinearRegression()
-
-# Fit the model with the training data
-model.fit(x_train, y_train)
-
-# Make predictions on the test set
-predictions = model.predict(x_test)
-
-print(f'\n prediction model initialized')
+# use linear regression model
+linear_model = train_linear_regression_model(x_train, x_test, y_train)
 
 # method to process the selection from the GUI
 def process_pawpularity(input):
   print("\n User input data:", input)
 
-  pawpularity_result = model.predict(input)
+  pawpularity_result = linear_model['model'].predict(input)
 
   # print to console
   # print("\n Pawpularity result: ", pawpularity_result)
