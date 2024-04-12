@@ -1,10 +1,10 @@
 import tkinter as tk
-from tkinter import Label, Frame, Button, Checkbutton
+from tkinter import Frame
 import pandas as pd
 from PIL import Image, ImageTk
 from models.paw_picture import PawPicture
 from prediction_models.occlusion_bagging_bayes import process_occlusion
-from prediction_models.logical.human_prediction import predict_human
+from prediction_models.logistic.human_prediction import predict_human
 from prediction_models.linear.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
 from uiHelper import GridManager
 
@@ -142,7 +142,9 @@ class Application(tk.Tk):
             pawpularity_score = process_pawpularity(df)
 
             occlusion_result = process_occlusion(df)
-            print("\n Occlusion probability: ", occlusion_result['occlusion_probability'], "%")
+            
+            # print to console
+            # print("\n Occlusion probability: ", occlusion_result['occlusion_probability'], "%")
 
             # call the method from the prediction_model.py to find the imageId
             imageId = find_imageId(pawpularity_score)

@@ -3,31 +3,28 @@
 # så applikationen giver mulighed for at man kan inputte data og returnerer det billede,
 # der svarer til samt pawpularity score for billedet.
 
-import pandas as pd
-import sklearn as sk
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-train_data = pd.read_csv("./data/train/train.csv")
-test_data = pd.read_csv("./data/test/test.csv")
-sample_submission = pd.read_csv("./data/test/sample_submission.csv")
+from data.load_data import load_pawpurarity_data
+from data.load_data import load_train_data
 
-# Prepare the data
-X_train = train_data.drop(['Id', 'Pawpularity', 'Subject Focus'], axis=1)
-X_test = test_data.drop(['Id', 'Subject Focus'], axis=1)
-y_train = train_data['Pawpularity']
-y_test = sample_submission['Pawpularity']
+# Load clean data
+train_data = load_train_data()
+
+# Load the processed data
+loaded_data = load_pawpurarity_data()
+x_train = loaded_data['x_train']
+x_test = loaded_data['x_test']
+y_train = loaded_data['y_train']
 
 # Create a Linear Regression model
 model = LinearRegression()
 
 # Fit the model with the training data
-model.fit(X_train, y_train)
+model.fit(x_train, y_train)
 
 # Make predictions on the test set
-predictions = model.predict(X_test)
+predictions = model.predict(x_test)
 
 print(f'\n prediction model initialized')
 
@@ -37,16 +34,19 @@ def process_pawpularity(input):
 
   pawpularity_result = model.predict(input)
 
-  print("\n Pawpularity result: ", pawpularity_result)
+  # print to console
+  # print("\n Pawpularity result: ", pawpularity_result)
   return pawpularity_result
 
+# method to find the imageId
 def find_imageId(pawpularity_result):
   # Calculate the absolute difference between the pawpularity_result and all pawpularity scores in the train_data
-  differences = abs(train_data['Pawpularity'] - pawpularity_result)
+  differences = abs(y_train - pawpularity_result)
   # Find the index of the minimum difference
   min_difference_index = differences.idxmin()
   # Return the Id of the image with the closest pawpularity score
   return train_data.loc[min_difference_index, 'Id']
 
+# method to create the image path
 def create_image_path(imageId):
   return f"./data/train/train_images/{imageId}.jpg"

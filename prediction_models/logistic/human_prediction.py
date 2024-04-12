@@ -32,7 +32,9 @@ predictions = model.predict(X_test)
 
 # Check the accuracy of the model
 accuracy = accuracy_score(y_test, predictions)
-print(f'\nHuman prediction model:  = Accuracy: {accuracy}')
+
+# Print to console
+# print(f'\nHuman prediction model:  = Accuracy: {accuracy}')
 
 def predict_human(imageId, o_pred):
     # Find the row in the dataframe that matches the imageId
