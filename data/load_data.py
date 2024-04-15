@@ -33,3 +33,15 @@ def load_occlusion_data():
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     return {"x_train": x_train, "x_test": x_test, "y_train": y_train, "y_test": y_test}
+
+def load_stacking_data():
+    stacking_train_data = load_train_data()
+    
+    # Prepare the data
+    df = pd.DataFrame(stacking_train_data)
+    x = df.drop(['Id', 'Pawpularity'], axis=1)
+    y = df['Pawpularity']
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+
+
+    return {"x_train": x_train, "x_test": x_test, "y_train": y_train, "y_test": y_test}
