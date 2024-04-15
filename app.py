@@ -4,6 +4,7 @@ import pandas as pd
 from PIL import Image, ImageTk
 from models.paw_picture import PawPicture
 from prediction_models.occlusion_bagging_bayes import process_occlusion
+from prediction_models.occlusion_adaboost_bayes import process_boosting_occlusion
 from prediction_models.human_prediction import predict_human
 from prediction_models.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
 from uiHelper import GridManager
@@ -139,7 +140,7 @@ class Application(tk.Tk):
             df = pd.DataFrame([createdPictureList[1]], columns=createdPictureList[0])
 
             # call the method from the prediction_model.py to process the selection
-            pawpularity_score = process_pawpularity(df)
+            pawpularity_score = process_pawpularity(df)   
 
             occlusion_result = process_occlusion(df)
             
@@ -150,7 +151,6 @@ class Application(tk.Tk):
             imageId = find_imageId(pawpularity_score)
 
             isHuman = predict_human(imageId, occlusion_result['o_pred'])
-
             if isHuman:
                 self.open_image_view("", isHuman, pawpularity_score[0], occlusion_result['occlusion_probability'])
             else:
