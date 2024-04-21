@@ -8,14 +8,29 @@ class BaseModel(ABC):
 
     def __init__(self):
         self.evaluation_results = {}
+        self.data = {}
 
     @abstractmethod
-    def train(self, x_train, y_train):
+    def _train(self, x_train, y_train):
         pass
     
-    @abstractmethod
-    def predict(self, x_test):
-        pass
+    def predict(self, x_test=None):
+        # Use internal data if no external x_test is provided
+        x_to_predict = x_test if x_test is not None else self.data.get('x_test')
+        if x_to_predict is None:
+            raise ValueError("No test data available for prediction")
+        return self.model.predict(x_to_predict) if self.model else None
+
+    def set_data(self, x_train, x_test, y_train, y_test):
+        self.data['x_train'] = x_train
+        self.data['x_test'] = x_test
+        self.data['y_train'] = y_train
+        self.data['y_test'] = y_test
+
+    def train(self):
+        if not self.data:
+            raise ValueError("Data has not been set")
+        self._train()
 
     def evaluate_model(self, X, y, y_test, predictions, model_name, use_case_name, n_splits=5, random_state=42):
         # Calculate performance metrics
@@ -35,27 +50,21 @@ class BaseModel(ABC):
 class LinearRegressionModel(BaseModel):
     def __init__(self):
         super().__init__()
-        self.model = None
-
-    def train(self, x_train, y_train):
         self.model = LinearRegressionModel()
-        self.model.fit(x_train, y_train)
-        print('\nLinear regression model trained.')
+        print('Linear Regression Model Initialized.\n')
 
-    def predict(self, x_test):
-        return self.model.predict(x_test) if self.model else None
+    def _train(self):
+        self.model.fit(self.data['x_train'], self.data['y_train'])
+        print('\nLinear regression model trained.')
 
 class LogisticRegressionModel(BaseModel):
     def __init__(self):
         super().__init__()
-        self.model = None
-
-    def train(self, x_train, y_train):
         self.model = LogisticRegression()
-        self.model.fit(x_train, y_train)
-        print('\nLinear regression model trained.')
+        print('Logistic Regression Model Initialized.\n')
 
-    def predict(self, x_test):
-        return self.model.predict(x_test) if self.model else None
+    def _train(self):
+        self.model.fit(self.data['x_train'], self.data['y_train'])
+        print('\nLogistic regression model trained.')
 
-# Add more classes for other models following the same structure...
+# Add more classes for other models following the same structure :-)
