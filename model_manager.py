@@ -9,6 +9,13 @@ class ModelManager:
         # Add new models here as needed
     }
 
+    use_case_models = {
+        'human_prediction': ['logistic_regression'],
+        'pawpularity_score': ['linear_regression'],
+        'occlusion_detection': ['logistic_regression', 'linear_regression']
+        # Define available models for each use case here.
+    }
+
     #Singleton pattern
     def __new__(cls):
         if cls._instance is None:
@@ -17,9 +24,15 @@ class ModelManager:
                 'human_prediction': None,
                 'pawpularity_score': None,
                 'occlusion_detection': None
+                # Add new use cases here as needed
             }
         return cls._instance
 
+    @classmethod
+    def get_use_case_models(cls):
+        """Retrieve available models for each use case."""
+        return {use_case: models for use_case, models in cls.use_case_models.items()}
+    
     @classmethod
     def add_model(cls, use_case_name, model_type):
         if use_case_name not in cls._instance.models:

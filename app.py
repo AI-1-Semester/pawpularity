@@ -8,6 +8,7 @@ from prediction_models.occlusion_adaboost_bayes import process_boosting_occlusio
 from prediction_models.human_prediction import predict_human
 from prediction_models.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
 from uiHelper import GridManager
+from model_manager import ModelManager
 
 # Assuming GridManager is in the same file or imported appropriately
 # from grid_manager import GridManager
@@ -35,7 +36,9 @@ class Application(tk.Tk):
 
         # Add 'Machine Learning' label and 'Open Form' button
         self.grid_manager.add_label(row=0, column=0, text="Machine Learning", font=('Arial', 24))
-        open_form_button = self.grid_manager.add_button(row=1, column=0, text="Open Form")
+        select_models_button = self.grid_manager.add_button(row=1, column=0, text="Select Models")
+        select_models_button.configure(command=self.create_model_selection_form)
+        open_form_button = self.grid_manager.add_button(row=1, column=1, text="Open Form")
         open_form_button.configure(command=self.open_form)
 
         # You might need to adjust the rowspan and columnspan
@@ -127,6 +130,30 @@ class Application(tk.Tk):
         grid_manager.add_button(12, 1, "OK").configure(command=lambda: self.submit_data(arr))
 
     # ... (update open_image_view similarly to use grid_manager)
+
+    def create_model_selection_form(self):
+         # Clear the current view
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+
+        # Using GridManager to manage layout
+        grid_manager = GridManager(self.main_frame, rows=20, columns=2)
+
+        # Assuming ModelManager has a method get_available_models()
+        use_cases = ModelManager.get_use_case_models()
+        grid_manager.add_label(0,0,"Use Cases", font=('Helvetica', 12)).grid(sticky='W')
+        grid_manager.add_label(0,1,"Model selection", font=('Helvetica', 12)).grid(sticky='W')
+
+        self.model_vars = {}
+        row = 1
+        for use_case, models in use_cases.items():
+            grid_manager.add_label(row, 0, f"{use_case}  :")
+            self.model_vars[use_case] = grid_manager.add_combobox(row, 1, models)
+            row += 1
+
+        # Buttons for Cancel and OK
+        grid_manager.add_button(row, 0, "Cancel", command=self.initialize_main_view)
+        grid_manager.add_button(row, 1, "OK", command=self.submit_models)
 
     def submit_data(self, arr):
             
