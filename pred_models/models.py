@@ -50,7 +50,7 @@ class BaseModel(ABC):
 class LinearRegressionModel(BaseModel):
     def __init__(self):
         super().__init__()
-        self.model = LinearRegressionModel()
+        self.model = LinearRegression()
         print('Linear Regression Model Initialized.\n')
 
     def _train(self):

@@ -152,8 +152,8 @@ class Application(tk.Tk):
             row += 1
 
         # Buttons for Cancel and OK
-        grid_manager.add_button(row, 0, "Cancel", command=self.initialize_main_view)
-        grid_manager.add_button(row, 1, "OK", command=self.submit_models)
+        grid_manager.add_button(row, 0, "Cancel", borderwidth=5, command=self.initialize_main_view)
+        grid_manager.add_button(row, 1, "OK", borderwidth=5, command=self.initialize_main_view)
 
     def submit_data(self, arr):
             
