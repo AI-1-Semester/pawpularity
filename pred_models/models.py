@@ -32,20 +32,34 @@ class BaseModel(ABC):
             raise ValueError("Data has not been set")
         self._train()
 
-    def evaluate_model(self, X, y, y_test, predictions, model_name, use_case_name, n_splits=5, random_state=42):
-        # Calculate performance metrics
-        performance_metrics = calculate_performance_measure(y_test, predictions)
+    def evaluate_model(self, predictions, model_name, use_case_name, n_splits=5, random_state=42):
+    # Calculate performance metrics
+        performance_metrics = calculate_performance_measure(self.data['y_test'], predictions)
         self.evaluation_results['performance_metrics'] = performance_metrics
 
-        # Create ROC curve and store the figure object
-        roc_curve_fig = create_roc_curve(y_test, predictions, model_name, use_case_name)
-        self.evaluation_results['roc_curve'] = roc_curve_fig
+        # Only create ROC curve for classification tasks, skip for 'pawpularity' or any other regression task
+        if use_case_name != 'pawpularity':  # You can extend this condition for other regression cases
+            try:
+                # Assume binary classification by default
+                if len(set(self.data['y_test'])) == 2:
+                    roc_curve_fig = create_roc_curve(self.data['y_test'], predictions, model_name, use_case_name)
+                    self.evaluation_results['roc_curve'] = roc_curve_fig
+                else:
+                    print(f"Skipping ROC curve for {use_case_name}: not a binary classification task.")
+            except Exception as e:
+                print(f"Error creating ROC curve for {use_case_name}: {str(e)}")
+        else:
+            print(f"Skipping ROC curve for {use_case_name}: ROC not applicable to regression tasks.")
 
-        # Perform cross-validation
-        cross_val_results = CrossValidation(X, y, self, n_splits, random_state)
-        self.evaluation_results['cross_validation'] = cross_val_results
+        # Perform cross-validation only if it's relevant; typically for all model types but can be skipped as needed
+        try:
+            cross_val_results = CrossValidation(self.data['x_train'], self.data['y_train'], self, n_splits, random_state)
+            self.evaluation_results['cross_validation'] = cross_val_results
+        except Exception as e:
+            print(f"Error performing cross-validation for {use_case_name}: {str(e)}")
 
         return self.evaluation_results
+
 
 class LinearRegressionModel(BaseModel):
     def __init__(self):
