@@ -5,7 +5,7 @@
 
 from data.load_data import load_pawpularity_data
 from data.load_data import load_train_data
-from prediction_models.models import train_linear_regression_model
+from prediction_models.models import train_linear_regression_model, train_stacked_model
 
 # Load clean data
 train_data = load_train_data()
@@ -19,6 +19,7 @@ y_test = loaded_data['y_test']
 
 # use linear regression model
 linear_model = train_linear_regression_model(x_train, x_test, y_train, y_test , 'pawpularity_score')
+# stacked_model = train_stacked_model(x_train, x_test, y_train, y_test, 'pawpularity_score')
 
 # method to process the selection from the GUI
 def process_pawpularity(input):
