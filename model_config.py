@@ -23,4 +23,8 @@ class ModelConfig:
     }
 
     # Defines which use cases are allowed
-    allowed_use_cases = {'human_prediction', 'pawpularity_score', 'occlusion_detection'}
+    allowed_use_cases = {
+        'human_prediction', 
+        'pawpularity_score', 
+        'occlusion_detection'
+        }

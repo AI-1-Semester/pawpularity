@@ -1,4 +1,4 @@
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, accuracy_score
 
 def calculate_performance_measure(y_test, predictions):
     # Calculate the mean squared error
@@ -11,3 +11,8 @@ def calculate_performance_measure(y_test, predictions):
     r2 = r2_score(y_test, predictions)
 
     return {"mse": mse, "mae": mae, "r2": r2}
+
+def calculate_accuracy(y_test, predictions):
+    # Calculate the accuracy of predictions
+    acc = accuracy_score(y_test, predictions)
+    return acc

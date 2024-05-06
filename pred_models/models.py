@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from metrics.performance_measure import calculate_performance_measure
+from metrics.performance_measure import calculate_performance_measure, calculate_accuracy
 from metrics.cross_validation  import CrossValidation
 from metrics.roc_curve import create_roc_curve
 
@@ -21,6 +21,22 @@ class BaseModel(ABC):
             raise ValueError("No test data available for prediction")
         return self.model.predict(x_to_predict) if self.model else None
 
+    def predict_proba(self, x_test=None):
+        x_to_predict = x_test if x_test is not None else self.data.get('x_test')
+        if x_to_predict is None:
+            raise ValueError("No test data available for prediction")
+        if hasattr(self.model, 'predict_proba'):
+            proba_output = self.model.predict_proba(x_to_predict)
+            # Check the shape of the output and adjust indexing accordingly
+            if proba_output.ndim == 1 or proba_output.shape[1] == 1:
+                # If the output is 1D or has only one column, use it as is
+                return proba_output.flatten()
+            else:
+                # Otherwise, use the second column for the probability of the positive class
+                return proba_output[:, 1]
+        else:
+            raise NotImplementedError("This model does not support probability predictions.")
+
     def set_data(self, x_train, x_test, y_train, y_test):
         self.data['x_train'] = x_train
         self.data['x_test'] = x_test
@@ -32,31 +48,25 @@ class BaseModel(ABC):
             raise ValueError("Data has not been set")
         self._train()
 
-    def evaluate_model(self, predictions, model_name, use_case_name, n_splits=5, random_state=42):
-    # Calculate performance metrics
+    def evaluate_model(self, prediction_results, model_name, use_case_name, n_splits=5, random_state=42):
+        predictions = prediction_results["predictions"]
+        probabilities = prediction_results["proba_predictions"]
+
+        # Calculate standard performance metrics (for both regression and classification)
         performance_metrics = calculate_performance_measure(self.data['y_test'], predictions)
         self.evaluation_results['performance_metrics'] = performance_metrics
 
-        # Only create ROC curve for classification tasks, skip for 'pawpularity' or any other regression task
-        if use_case_name != 'pawpularity':  # You can extend this condition for other regression cases
+        # Calculate accuracy and ROC curve if probabilities are available (typically for classification tasks)
+        if probabilities is not None:
+            accuracy = calculate_accuracy(self.data['y_test'], predictions)
+            self.evaluation_results['accuracy'] = accuracy
             try:
-                # Assume binary classification by default
-                if len(set(self.data['y_test'])) == 2:
-                    roc_curve_fig = create_roc_curve(self.data['y_test'], predictions, model_name, use_case_name)
-                    self.evaluation_results['roc_curve'] = roc_curve_fig
-                else:
-                    print(f"Skipping ROC curve for {use_case_name}: not a binary classification task.")
+                roc_curve_fig = create_roc_curve(self.data['y_test'], probabilities, model_name, use_case_name)
+                self.evaluation_results['roc_curve'] = roc_curve_fig
             except Exception as e:
                 print(f"Error creating ROC curve for {use_case_name}: {str(e)}")
         else:
-            print(f"Skipping ROC curve for {use_case_name}: ROC not applicable to regression tasks.")
-
-        # Perform cross-validation only if it's relevant; typically for all model types but can be skipped as needed
-        try:
-            cross_val_results = CrossValidation(self.data['x_train'], self.data['y_train'], self, n_splits, random_state)
-            self.evaluation_results['cross_validation'] = cross_val_results
-        except Exception as e:
-            print(f"Error performing cross-validation for {use_case_name}: {str(e)}")
+            print(f"No probabilities available, skipping accuracy and ROC curve for {use_case_name}.")
 
         return self.evaluation_results
 

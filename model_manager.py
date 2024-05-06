@@ -37,20 +37,47 @@ class ModelManager:
         print(f"New model added for {use_case_name}")
 
     @classmethod
-    def predict(cls, use_case_name, x_test=None):
+    def predict(cls, use_case_name, x_test=None, evaluate = True):
         model = cls._instance.models.get(use_case_name)
         if model is None:
             raise ValueError(f"No model available for {use_case_name}")
 
-        prediction = model.predict(x_test)
-        cls._instance.last_predictions[use_case_name] = prediction
-        
-        last_prediction = cls.get_last_prediction(use_case_name)
-        print('Last Pred: ', last_prediction)
-        
-        evaluation = model.evaluate_model(last_prediction, 'Random Ass Name',use_case_name)
-        print('Evaluation: ', evaluation['performance_metrics'])
-        return prediction
+        isNew_x_test = False if x_test is None else True
+
+        if x_test == None:
+            x_test = model.data['x_test']
+
+        # Dictionary to hold prediction results
+        prediction_results = {
+            "predictions": model.predict(x_test),
+            "proba_predictions": None
+        }
+
+        print(type(model.model))
+        # Obtain probability predictions if the model supports it
+        if hasattr(model.model, 'predict_proba'):
+            proba_output = model.predict_proba(x_test)
+            # Check the shape of the output and adjust indexing accordingly
+            if proba_output.ndim == 1 or proba_output.shape[1] == 1:
+                # If the output is 1D or has only one column, use it as is
+                prediction_results["proba_predictions"] = proba_output.flatten()
+            else:
+                # Otherwise, use the second column for the probability of the positive class
+                prediction_results["proba_predictions"] = proba_output[:, 1]
+
+        # Store last predictions
+        cls._instance.last_predictions[use_case_name] = prediction_results
+
+                # Evaluate the model if requested
+        if evaluate and isNew_x_test == False:
+            evaluation_results = model.evaluate_model(prediction_results,
+                ModelConfig.default_models.get(use_case_name), #modelname
+                use_case_name
+            )
+            model.evaluation_results = evaluation_results
+            print("Evaluation Results:", evaluation_results)
+
+        return prediction_results
 
     @staticmethod
     def get_training_data(use_case_name):
@@ -70,9 +97,19 @@ class ModelManager:
 
         return training_data['x_train'], training_data['x_test'], training_data['y_train'], training_data['y_test']
 
+
+    @classmethod
+    def get_evaluation_results(cls, use_case_name):
+        model = cls._instance.models.get(use_case_name)
+        if model is None:
+            raise ValueError(f"No model available for use case: {use_case_name}")
+        # Optionally, you could trigger an evaluation here or just return stored results
+        return model.evaluation_results
+
     @classmethod
     def get_last_prediction(cls, use_case_name):
         return cls._instance.last_predictions.get(use_case_name)
+
 
     def predict_with_custom_handling(self, use_case_name, **kwargs):
         print('use case name: ', use_case_name)
