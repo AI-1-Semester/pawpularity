@@ -16,3 +16,7 @@ def calculate_accuracy(y_test, predictions):
     # Calculate the accuracy of predictions
     acc = accuracy_score(y_test, predictions)
     return acc
+    # Calculate the accuracy (only for stacked model)
+    #accuracy = accuracy_score(y_test, predictions)
+
+    return {"mse": mse, "mae": mae, "r2": r2}
