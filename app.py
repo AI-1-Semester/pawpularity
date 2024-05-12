@@ -10,6 +10,8 @@ from prediction_models.pawpularity_prediction import create_image_path, find_ima
 from uiHelper import GridManager
 from model_manager import ModelManager
 from model_config import ModelConfig
+from tkinter import Toplevel, Scrollbar, Canvas
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Assuming GridManager is in the same file or imported appropriately
 # from grid_manager import GridManager
@@ -77,6 +79,7 @@ class Application(tk.Tk):
         # Add "Open Form" and "Back" buttons to the bottom
         grid_manager.add_button(3, 0, "Open Form").configure(command=self.close_image_and_open_form)
         grid_manager.add_button(3, 1, "Back").configure(command=self.close_image_and_initialize_main_view)
+        grid_manager.add_button(2, 0, "Metrics").configure(command=self.open_metrics)
 
         # Configure column widths to give more space to the image
         self.main_frame.grid_columnconfigure(0, weight=3)  # Image column gets more space
@@ -170,20 +173,27 @@ class Application(tk.Tk):
             # Create a DataFrame from the list
             df = pd.DataFrame([createdPictureList[1]], columns=createdPictureList[0])
 
-            # call the method from the prediction_model.py to process the selection
-            pawpularity_score = process_pawpularity(df)   
+            # call the method from the Modelmanage to process the selection
+            ModelManager.predict("pawpularity_score", x_test=df)
+            paw_pred_results = ModelManager.last_predictions['pawpularity_score']
+            paw_predictions = paw_pred_results['predictions']
+            print(f"paw pred - {paw_predictions}")
 
-            occlusion_result = process_occlusion(df)
+            ModelManager._predict_occlusion(x_test=df)
+            occlu_pred_results = ModelManager.last_predictions['occlusion_detection']
+            occlusion_predictions = occlu_pred_results['proba_predictions']
+            print(f"oclu pred - {occlusion_predictions}")
+            # occlusion_result = process_occlusion(df)
             
             # print to console
             # print("\n Occlusion probability: ", occlusion_result['occlusion_probability'], "%")
 
             # call the method from the prediction_model.py to find the imageId
-            imageId = find_imageId(pawpularity_score)
+            imageId = find_imageId(paw_predictions)
 
-            isHuman = predict_human(imageId, occlusion_result['o_pred'])
+            isHuman = predict_human(imageId, occlusion_predictions)
             if isHuman:
-                self.open_image_view("", isHuman, pawpularity_score[0], occlusion_result['occlusion_probability'])
+                self.open_image_view("", isHuman, paw_predictions, occlusion_predictions)
             else:
                 # call the method from the prediction_model.py to create the image path
                 imagepath = create_image_path(imageId)
@@ -191,7 +201,8 @@ class Application(tk.Tk):
                 #print(imageId)
 
                 # Return to image view or wherever you want after submission    
-                self.open_image_view(imagepath, isHuman, pawpularity_score[0], occlusion_result['occlusion_probability'])
+                self.open_image_view(imagepath, isHuman, paw_predictions, occlusion_predictions)
+
 
     def save_model_selections(self):
         for use_case, combobox in self.comboboxes.items():
@@ -203,6 +214,73 @@ class Application(tk.Tk):
                 except ValueError as e:
                     print(e)
         self.initialize_main_view() 
+
+    def open_metrics(self):
+         # Clear the current view
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+
+        # Create a new top-level window
+        metrics_window = Toplevel(self.main_frame)
+        metrics_window.title("Model Metrics")
+
+        # Create a canvas with a scrollbar
+        canvas = Canvas(metrics_window)
+        scrollbar = Scrollbar(metrics_window, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas)
+
+        # Configure the canvas to be scrollable
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Add the canvas and scrollbar to the window
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Call a function to populate the metrics and plots
+        self.populate_metrics(scrollable_frame)
+
+        btn_frame = tk.Frame(self.main_frame)
+        btn_frame.pack(fill=tk.X, pady=10)
+        back_btn = tk.Button(btn_frame, text="Back to Main View", command=self.initialize_main_view)
+        back_btn.pack(side=tk.LEFT, padx=10)
+
+    def populate_metrics(self, frame):
+        # Example use cases
+        use_cases = ['pawpularity_score', 'occlusion_detection', 'human_prediction']
+        for use_case in use_cases:
+            self.add_metrics_for_use_case(frame, use_case)
+
+    def add_metrics_for_use_case(self, frame, use_case_name):
+        # Retrieve the evaluation results for a given use case
+        evaluation_results = ModelManager.get_evaluation_results(use_case_name)
+
+        # Display performance metrics
+        if 'performance_metrics' in evaluation_results:
+            perf_metrics = evaluation_results['performance_metrics']
+            metrics_info = f"Performance Metrics for {use_case_name}: MSE={perf_metrics.get('mse', 'N/A')}, MAE={perf_metrics.get('mae', 'N/A')}, R2={perf_metrics.get('r2', 'N/A')}"
+            perf_label = tk.Label(frame, text=metrics_info)
+            perf_label.pack(pady=10)
+
+        # Display accuracy if available
+        if 'accuracy' in evaluation_results:
+            accuracy_info = f"Accuracy for {use_case_name}: {evaluation_results['accuracy']}"
+            accuracy_label = tk.Label(frame, text=accuracy_info)
+            accuracy_label.pack(pady=10)
+
+        # Handle and display the ROC curve if it's part of the results
+        if 'roc_curve' in evaluation_results and evaluation_results['roc_curve'] is not None:
+            fig = evaluation_results['roc_curve']
+            canvas = FigureCanvasTkAgg(fig, master=frame)  # Create a Tkinter.DrawingArea.
+            canvas.draw()
+            widget = canvas.get_tk_widget()
+            widget.pack(fill=tk.BOTH, expand=True)
 
 if __name__ == "__main__":
     app = Application()

@@ -29,6 +29,12 @@ class ModelManager:
     def add_model(cls, use_case_name, model_name):
         if use_case_name not in ModelConfig.allowed_use_cases:
             raise ValueError(f"No such use case: {use_case_name}")
+        
+        # Check if the model already exists and is of the same type
+        existing_model = cls._instance.models.get(use_case_name)
+        if existing_model and isinstance(existing_model, ModelConfig.model_factory[model_name]):
+            print(f"Model for {use_case_name} is already set to {model_name}. No action taken.")
+            return
 
         model_class = ModelConfig.model_factory.get(model_name)
         if model_class is None:
@@ -40,21 +46,27 @@ class ModelManager:
         model.train()
         cls._instance.models[use_case_name] = model
         print(f"New model added for {use_case_name}")
+       
+        cls._instance.predict(use_case_name,evaluate=True)
 
     @classmethod
-    def predict(cls, use_case_name, x_test=None, evaluate = True):
+    def predict(cls, use_case_name, x_test=None, evaluate=False):
+        # Validate if the use case name is allowed before proceeding
+        if use_case_name not in ModelConfig.allowed_use_cases:
+            raise ValueError(f"No such use case: {use_case_name}")
+
         model = cls._instance.models.get(use_case_name)
         if model is None:
             raise ValueError(f"No model available for {use_case_name}")
+        
+        isNew_x_test = x_test is not None
 
-        isNew_x_test = False if x_test is None else True
-
-        if x_test == None:
+        if x_test is None:
             x_test = model.data['x_test']
 
-        # Dictionary to hold prediction results
+        predictions = model.predict(x_test)
         prediction_results = {
-            "predictions": model.predict(x_test),
+            "predictions": predictions,
             "proba_predictions": None
         }
 
@@ -62,7 +74,7 @@ class ModelManager:
         if hasattr(model.model, 'predict_proba'):
             proba_output = model.predict_proba(x_test)
             # Check the shape of the output and adjust indexing accordingly
-            if proba_output.ndim == 1 or proba_output.shape[1] == 1:
+            if proba_output.ndim == 1 or (proba_output.ndim == 2 and proba_output.shape[1] == 1):
                 # If the output is 1D or has only one column, use it as is
                 prediction_results["proba_predictions"] = proba_output.flatten()
             else:
@@ -72,16 +84,33 @@ class ModelManager:
         # Store last predictions
         cls._instance.last_predictions[use_case_name] = prediction_results
 
-                # Evaluate the model if requested
-        if evaluate and isNew_x_test == False:
-            evaluation_results = model.evaluate_model(prediction_results,
-                ModelConfig.default_models.get(use_case_name), #modelname
-                use_case_name
-            )
+        # Evaluate the model if requested and if the test data hasn't been newly provided
+        if evaluate and not isNew_x_test:
+            evaluation_results = cls._instance.evaluate_model(prediction_results, use_case_name)
             model.evaluation_results = evaluation_results
             print("Evaluation Results:", evaluation_results)
 
         return prediction_results
+
+    def evaluate_model(cls, prediction_results, use_case_name):
+        model = cls._instance.models.get(use_case_name)
+        if model is None:
+            raise ValueError(f"No model available for {use_case_name}")
+
+        try:
+            # Directly call the model's evaluate method with all required parameters
+            evaluation_results = model.evaluate_model(
+                prediction_results,
+                ModelConfig.model_class_to_name.get(use_case_name),  # Pass the default model name for the ROC curve
+                use_case_name
+            )
+            model.evaluation_results = evaluation_results
+            print(f"Evaluation Results Updated for {use_case_name}: ", evaluation_results)
+        except Exception as e:
+            print(f"Error during evaluation for {use_case_name}: {str(e)}")
+            evaluation_results = {}
+
+        return evaluation_results
 
     @staticmethod
     def get_training_data(use_case_name):
@@ -114,7 +143,7 @@ class ModelManager:
     def get_last_prediction(cls, use_case_name):
         return cls._instance.last_predictions.get(use_case_name)
 
-
+    @classmethod
     def predict_with_custom_handling(self, use_case_name, **kwargs):
         print('use case name: ', use_case_name)
         if use_case_name == 'human_prediction':
@@ -125,8 +154,9 @@ class ModelManager:
         else:
             return self.predict(use_case_name, kwargs.get('x_test'))
 
-    def _predict_human(self, imageId, o_pred):
-        train_data = self.get_training_data('human_prediction')[0]  # Ensure this returns expected DataFrame
+    @classmethod
+    def _predict_human(cls, imageId, o_pred):
+        train_data = cls._instance.get_training_data('human_prediction')[0]  # Ensure this returns expected DataFrame
         row = train_data[train_data['Id'] == imageId]
         if row.empty:
             raise ValueError(f"No data found for ID {imageId}")
@@ -134,10 +164,12 @@ class ModelManager:
         row = row.drop(['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur', 'Human', 'Group'], axis=1)
         row['Occlusion'] = o_pred
         print("Data row after setting occlusion:", row)
-        prediction = self.predict('human_prediction', row)
+        prediction = cls._instance.predict('human_prediction', row)
         print("Prediction:", prediction) 
         return prediction
 
-    def _predict_occlusion(self, x_test):
+    @classmethod
+    def _predict_occlusion(cls, x_test):
+        transformed_x_test = x_test.drop(['Occlusion'], axis=1)
         # Implement any special preprocessing or parameter adjustments for occlusion detection here
-        return self.predict('occlusion_detection', x_test)
+        return cls._instance.predict('occlusion_detection', transformed_x_test)

@@ -28,3 +28,9 @@ class ModelConfig:
         'pawpularity_score', 
         'occlusion_detection'
         }
+
+     # Maps model types to their corresponding class implementations
+    model_class_to_name = {
+         LinearRegressionModel: 'linear_regression',
+        LogisticRegressionModel: 'logistic_regression'
+    }

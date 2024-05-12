@@ -53,16 +53,13 @@ class BaseModel(ABC):
         probabilities = prediction_results["proba_predictions"]
 
         # Calculate standard performance metrics (for both regression and classification)
-        performance_metrics = calculate_performance_measure(self.data['y_test'], predictions)
-        self.evaluation_results['performance_metrics'] = performance_metrics
+        self.evaluation_results['performance_metrics'] = calculate_performance_measure(self.data['y_test'], predictions)
 
         # Calculate accuracy and ROC curve if probabilities are available (typically for classification tasks)
         if probabilities is not None:
-            accuracy = calculate_accuracy(self.data['y_test'], predictions)
-            self.evaluation_results['accuracy'] = accuracy
+            self.evaluation_results['accuracy'] = calculate_accuracy(self.data['y_test'], predictions)
             try:
-                roc_curve_fig = create_roc_curve(self.data['y_test'], probabilities, model_name, use_case_name)
-                self.evaluation_results['roc_curve'] = roc_curve_fig
+                self.evaluation_results['roc_curve'] = create_roc_curve(self.data['y_test'], probabilities, model_name, use_case_name)
             except Exception as e:
                 print(f"Error creating ROC curve for {use_case_name}: {str(e)}")
         else:
