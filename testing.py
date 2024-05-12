@@ -1,5 +1,6 @@
 from pred_models.models import LinearRegressionModel, LogisticRegressionModel
 from model_manager import  ModelManager
+import matplotlib.pyplot as plt
 import numpy as np
 from data.load_data import load_humanpred_data,load_occlusion_data,load_train_data,load_pawpularity_data
 
@@ -35,3 +36,13 @@ try:
 
 except ValueError as e:
     print(e)
+
+usecase_eval_results = [human_eval_results, pawpularity_eval_results, occlusion_eval_results]
+
+roc_plot = human_eval_results.get('roc_curve', None)
+if roc_plot is not None:
+     roc_plot.show()
+     input("Press [enter] to continue.")
+     print("Roc plot shown.")
+else:
+     print("ROC plot is not available or not found.")

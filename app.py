@@ -9,6 +9,7 @@ from prediction_models.human_prediction import predict_human
 from prediction_models.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
 from uiHelper import GridManager
 from model_manager import ModelManager
+from model_config import ModelConfig
 
 # Assuming GridManager is in the same file or imported appropriately
 # from grid_manager import GridManager
@@ -23,7 +24,8 @@ class Application(tk.Tk):
         self.main_frame = Frame(self)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
         self.grid_manager = GridManager(self.main_frame, rows=15, columns=2)  # Adjust rows and columns as needed
-        
+        ModelManager.init_singleton()
+
         self.initialize_main_view()
 
     def initialize_main_view(self):
@@ -140,20 +142,22 @@ class Application(tk.Tk):
         grid_manager = GridManager(self.main_frame, rows=20, columns=2)
 
         # Assuming ModelManager has a method get_available_models()
-        use_cases = ModelManager.get_use_case_models()
+        use_cases = ModelConfig.use_case_models
         grid_manager.add_label(0,0,"Use Cases", font=('Helvetica', 12)).grid(sticky='W')
         grid_manager.add_label(0,1,"Model selection", font=('Helvetica', 12)).grid(sticky='W')
 
         self.model_vars = {}
+        self.comboboxes = {}
         row = 1
         for use_case, models in use_cases.items():
             grid_manager.add_label(row, 0, f"{use_case}  :")
-            self.model_vars[use_case] = grid_manager.add_combobox(row, 1, models)
+            cb = grid_manager.add_combobox(row, 1, models)
+            self.comboboxes[use_case] = cb 
             row += 1
 
         # Buttons for Cancel and OK
         grid_manager.add_button(row, 0, "Cancel", borderwidth=5, command=self.initialize_main_view)
-        grid_manager.add_button(row, 1, "OK", borderwidth=5, command=self.initialize_main_view)
+        grid_manager.add_button(row, 1, "OK", borderwidth=5, command=self.save_model_selections)
 
     def submit_data(self, arr):
             
@@ -188,6 +192,17 @@ class Application(tk.Tk):
 
                 # Return to image view or wherever you want after submission    
                 self.open_image_view(imagepath, isHuman, pawpularity_score[0], occlusion_result['occlusion_probability'])
+
+    def save_model_selections(self):
+        for use_case, combobox in self.comboboxes.items():
+            selected_model = combobox.get()
+            if selected_model:  # Ensure there's a selection
+                try:
+                    ModelManager.add_model(use_case, selected_model)
+                    print(f"Model for {use_case} set to {selected_model}")
+                except ValueError as e:
+                    print(e)
+        self.initialize_main_view() 
 
 if __name__ == "__main__":
     app = Application()

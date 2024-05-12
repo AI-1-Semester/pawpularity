@@ -14,6 +14,11 @@ class ModelManager:
             cls._instance.models = {}
             cls.init_default_models()
         return cls._instance
+    
+    @classmethod
+    def init_singleton(cls):
+        # This method explicitly initializes the singleton instance
+        return cls.__new__(cls)
 
     @classmethod
     def init_default_models(cls):
@@ -53,7 +58,6 @@ class ModelManager:
             "proba_predictions": None
         }
 
-        print(type(model.model))
         # Obtain probability predictions if the model supports it
         if hasattr(model.model, 'predict_proba'):
             proba_output = model.predict_proba(x_test)
