@@ -59,7 +59,7 @@ class Application(tk.Tk):
         # Set up the grid manager for the main frame
         grid_manager = GridManager(self.main_frame, rows=4, columns=2)
 
-    # Add the image or the "Is human" label to the left side (column 0)
+        # Add the image or the "Is human" label to the left side (column 0)
         if isHuman and image_path == "":
             grid_manager.add_label(0, 0, f"Is human {isHuman}", font=('Arial', 24))
         else:
@@ -71,9 +71,9 @@ class Application(tk.Tk):
             self.label.grid(row=0, column=0, rowspan=4, sticky="nsew")  # Image spans multiple rows
 
         # Add the Pawpularity Score and Occlusion probability labels to the right side (column 1)
-        if pawpularity_score:
+        if pawpularity_score is not None:
             grid_manager.add_label(0, 1, f"Pawpularity Score: {pawpularity_score}", font=('Arial', 24))
-        if occlusion_probability:
+        if occlusion_probability is not None:
             grid_manager.add_label(1, 1, f"Occlusion probability: {occlusion_probability}", font=('Arial', 24))
         
         # Add "Open Form" and "Back" buttons to the bottom

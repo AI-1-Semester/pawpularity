@@ -6,6 +6,7 @@ from metrics.roc_curve import create_roc_curve
 from torch import nn, optim
 import torch
 from models.neural_network import Net
+from prediction_models.nn_human_prediction import HumanPredictionNN
 
 
 class BaseModel(ABC):
@@ -125,3 +126,37 @@ class NN_PawpularityModel(BaseModel):
         with torch.no_grad():
             predictions = self.model(x_to_predict).numpy()
         return predictions.squeeze()
+    
+class NN_HumanModel(BaseModel):
+    def __init__(self):
+        super().__init__()
+        self.model = None
+        self.criterion = nn.BCELoss()
+        self.optimizer = None
+        print('Neural Network Human Prediction Model Initialized.\n')
+
+    def set_data(self, x_train, x_test, y_train, y_test):
+        super().set_data(x_train, x_test, y_train, y_test)
+        input_size = self.data['x_train'].shape[1]
+        self.model = HumanPredictionNN(input_size)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+
+    def _train(self):
+        x_train_tensor = torch.tensor(self.data['x_train'].values).float()
+        y_train_tensor = torch.tensor(self.data['y_train'].values).float().unsqueeze(1)
+
+        for epoch in range(1000):
+            self.model.train()
+            self.optimizer.zero_grad()
+            outputs = self.model(x_train_tensor)
+            loss = self.criterion(outputs, y_train_tensor)
+            loss.backward()
+            self.optimizer.step()
+        print('\nNeural network human prediction model trained.')
+
+    def predict(self, x_test=None):
+        self.model.eval()
+        x_to_predict = torch.tensor(x_test.values if x_test is not None else self.data['x_test'].values).float()
+        with torch.no_grad():
+            predictions = self.model(x_to_predict).numpy().squeeze()
+        return (predictions >= 0.5).astype(float)
