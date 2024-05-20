@@ -1,71 +1,103 @@
 import pandas as pd
 import torch
 from torch import nn, optim
-from sklearn.model_selection import train_test_split
-from torch.utils.data import TensorDataset, DataLoader
+from sklearn.preprocessing import StandardScaler
+from data.load_data import load_train_data, load_humanpred_data
 
 # Load the data
-train_data = pd.read_csv("./data/train/train.csv")
+train_data = load_train_data()
+loaded_data = load_humanpred_data()
+x_train = loaded_data['x_train']
+x_test = loaded_data['x_test']
+y_train = loaded_data['y_train']
+y_test = loaded_data['y_test']
 
-# Transform the data
-correlated_data = train_data.drop(columns=['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur', 'Group'], axis=1)
-df = pd.DataFrame(correlated_data)
+# Standardize the data
+scaler = StandardScaler()
+x_train = scaler.fit_transform(x_train)
+x_test = scaler.transform(x_test)
 
-# Split the data into training and testing sets
-X = df.drop('Human', axis=1)
-y = df['Human']
-X_train, X_test, y_train, y_test = train_test_split(X.values, y.values, test_size=0.2, random_state=42)
-
-# Convert data to PyTorch tensors
-X_train_tensor = torch.tensor(X_train).float()
-X_test_tensor = torch.tensor(X_test).float()
-y_train_tensor = torch.tensor(y_train).float()
-y_test_tensor = torch.tensor(y_test).float()
+# Convert to PyTorch tensors
+x_train_tensor = torch.tensor(x_train, dtype=torch.float32)
+y_train_tensor = torch.tensor(y_train.values, dtype=torch.float32).unsqueeze(1)
+x_test_tensor = torch.tensor(x_test, dtype=torch.float32)
+y_test_tensor = torch.tensor(y_test.values, dtype=torch.float32).unsqueeze(1)
 
 # Define the neural network model
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.fc1 = nn.Linear(X_train.shape[1], 50)  # Change the number of neurons if necessary
-        self.fc2 = nn.Linear(50, 1)
+class HumanPredictionNN(nn.Module):
+    def __init__(self, input_size):
+        super(HumanPredictionNN, self).__init__()
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3 = nn.Linear(32, 1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
-        x = torch.sigmoid(self.fc2(x))  # Using sigmoid for the binary classification output
-        return x
+        x = torch.relu(self.fc2(x))
+        x = self.fc3(x)
+        return self.sigmoid(x)
 
-# Initialize the model, loss function, and optimizer
-model = Net()
-criterion = nn.BCELoss()  # Binary Cross-Entropy Loss for binary classification
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+# Initialize the model
+input_size = x_train_tensor.shape[1]
+model = HumanPredictionNN(input_size)
 
-# DataLoader for batching
-train_data = TensorDataset(X_train_tensor, y_train_tensor)
-train_loader = DataLoader(train_data, batch_size=10, shuffle=True)
+# Define loss and optimizer
+criterion = nn.BCELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Train the model
-num_epochs = 50  # You can adjust the number of epochs
-for epoch in range(num_epochs):
-    for inputs, labels in train_loader:
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs.squeeze(), labels)
-        loss.backward()
-        optimizer.step()
+for epoch in range(1000):
+    model.train()
+    optimizer.zero_grad()
+    outputs = model(x_train_tensor)
+    loss = criterion(outputs, y_train_tensor)
+    loss.backward()
+    optimizer.step()
+    
+    if (epoch + 1) % 100 == 0:
+        print(f'Epoch [{epoch + 1}/{epoch}], Loss: {loss.item():.4f}')
+
+print('Training complete.')
+
+# Save the model
+torch.save(model.state_dict(), 'human_prediction_model.pth')
 
 # Evaluate the model
 model.eval()
 with torch.no_grad():
-    outputs = model(X_test_tensor).squeeze()
-    predictions = (outputs > 0.5).float()  # Convert probabilities to binary output
-    accuracy = (predictions == y_test_tensor).float().mean()
+    y_pred = model(x_test_tensor)
+    y_pred_class = (y_pred >= 0.5).float()
+    accuracy = (y_pred_class == y_test_tensor).float().mean()
+    print(f'Accuracy: {accuracy.item():.4f}')
 
-print(f'Neural Network Human prediction model - Accuracy: {accuracy.item()}')
-
+# Prediction function
 def predict_human(imageId, o_pred):
+    print(f"Predicting human for imageId: {imageId} with occlusion: {o_pred}")
+    
+    # Find the row in the dataframe that matches the imageId
     row = train_data[train_data['Id'] == imageId]
+
+    if row.empty:
+        raise ValueError(f"No data found for imageId: {imageId}")
+
+    # Prepare the row for prediction by dropping the 'Human' column
     row = row.drop(['Id', 'Pawpularity', 'Action', 'Accessory', 'Near', 'Collage', 'Eyes', 'Face', 'Info', 'Subject Focus', 'Blur', 'Human', 'Group'], axis=1)
+
+    # Set the 'Occlusion' column to the provided o_pred value
     row['Occlusion'] = o_pred
-    row_tensor = torch.tensor(row.values).float()
-    prediction = model(row_tensor)
-    return prediction.item() > 0.5
+    
+    # Standardize the row using the same scaler used during training
+    row_scaled = scaler.transform(row)
+    
+    # Convert to PyTorch tensor
+    row_tensor = torch.tensor(row_scaled, dtype=torch.float32)
+    
+    # Make a prediction
+    with torch.no_grad():
+        prediction = model(row_tensor).item()
+
+    print(f"Prediction score: {prediction}")
+    
+    # If the prediction is 1 (or above a threshold, e.g., 0.5), there is a human in the image
+    return prediction >= 0.5
