@@ -10,6 +10,8 @@ from prediction_models.nn_human_prediction import HumanPredictionNN
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
+import pandas as pd
+import seaborn as sns
 
 
 class BaseModel(ABC):
@@ -207,5 +209,40 @@ class KMeansModel(BaseModel):
         # Annotate points with original indices
         for i, (x, y) in enumerate(x_test_reduced):
             ax.text(x, y, f"{i}", fontsize=8, ha='right', color='black')
+
+        return fig
+
+    def feature_analysis(self):
+        # Analyze cluster centers in the reduced PCA space
+        cluster_centers = self.model.cluster_centers_
+        cluster_centers_reduced = self.pca.transform(cluster_centers)
+        cluster_features = pd.DataFrame(cluster_centers_reduced, columns=['PC1', 'PC2'])
+        cluster_features['Cluster'] = range(self.n_clusters)
+        return cluster_features
+
+    def plot_feature_distributions(self):
+        labels = self.predict(self.data['x_test'])
+        df = self.data['x_test'].copy()
+        df['Cluster'] = labels
+        for feature in df.columns[:-1]:  # Skip the 'Cluster' column
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(x='Cluster', y=feature, data=df)
+            plt.title(f'Distribution of {feature} by Cluster')
+            plt.show()
+
+    def plot_elbow_method(self):
+        x_train = self.data['x_train']
+        sse = []
+        for k in range(1, 11):
+            kmeans = KMeans(n_clusters=k, random_state=42)
+            kmeans.fit(x_train)
+            sse.append(kmeans.inertia_)
+        
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.plot(range(1, 11), sse, marker='o')
+        ax.set_title('Elbow Method for Optimal k')
+        ax.set_xlabel('Number of clusters (k)')
+        ax.set_ylabel('Sum of squared errors (SSE)')
+        ax.grid(True)
 
         return fig

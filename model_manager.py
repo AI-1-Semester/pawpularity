@@ -45,8 +45,14 @@ class ModelManager:
         
         # Clustering
         if use_case_name == 'data_clustering':
+        # Load and set data for clustering
+            clustering_data = load_clustering_data()
+            x_train, x_test = clustering_data['x_train'], clustering_data['x_test']
+            model = model_class(n_clusters=3)  # Initialize with the desired number of clusters
             model.set_data(x_train, x_test)
         else:
+            x_train, x_test, y_train, y_test = cls.get_training_data(use_case_name)
+            model = model_class()
             model.set_data(x_train, x_test, y_train, y_test)
             
         model.set_data(x_train, x_test, y_train, y_test)
