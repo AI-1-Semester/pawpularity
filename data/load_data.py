@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_blobs
 
 def load_train_data():
     train_data = pd.read_csv("./data/train/train.csv")
@@ -54,3 +55,14 @@ def load_stacking_data():
 
 
     return {"x_train": x_train, "x_test": x_test, "y_train": y_train, "y_test": y_test}
+
+def load_clustering_data(n_samples=100, n_features=2, centers=3, random_state=42):
+    X, _ = make_blobs(n_samples=n_samples, n_features=n_features, centers=centers, random_state=random_state)
+    n_train = int(0.8 * n_samples)
+    x_train, x_test = X[:n_train], X[n_train:]
+    return {
+        'x_train': pd.DataFrame(x_train, columns=[f'feature_{i}' for i in range(n_features)]),
+        'x_test': pd.DataFrame(x_test, columns=[f'feature_{i}' for i in range(n_features)]),
+        'y_train': None,
+        'y_test': None
+    }

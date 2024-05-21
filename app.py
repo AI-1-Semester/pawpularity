@@ -253,7 +253,7 @@ class Application(tk.Tk):
 
     def populate_metrics(self, frame):
         # Example use cases
-        use_cases = ['pawpularity_score', 'occlusion_detection', 'human_prediction']
+        use_cases = ['pawpularity_score', 'occlusion_detection', 'human_prediction', 'data_clustering']
         for use_case in use_cases:
             self.add_metrics_for_use_case(frame, use_case)
 
@@ -281,6 +281,18 @@ class Application(tk.Tk):
             canvas.draw()
             widget = canvas.get_tk_widget()
             widget.pack(fill=tk.BOTH, expand=True)
+            
+        if use_case_name == 'data_clustering':
+            kmeans_model = ModelManager._instance.models.get('data_clustering')
+            if kmeans_model:
+                clustering_info = f"K-Means Clustering Results: Clusters={len(set(kmeans_model.model.labels_))}"
+                clustering_label = tk.Label(frame, text=clustering_info)
+                clustering_label.pack(pady=10)
+                fig = kmeans_model.plot_clusters()
+                canvas = FigureCanvasTkAgg(fig, master=frame)
+                canvas.draw()
+                widget = canvas.get_tk_widget()
+                widget.pack(fill=tk.BOTH, expand=True)
 
 if __name__ == "__main__":
     app = Application()

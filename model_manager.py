@@ -1,6 +1,6 @@
 # model_manager.py
 from pred_models.models import LinearRegressionModel, LogisticRegressionModel
-from data.load_data import load_pawpularity_data, load_occlusion_data, load_humanpred_data, load_train_data
+from data.load_data import load_pawpularity_data, load_occlusion_data, load_humanpred_data, load_train_data, load_clustering_data
 from model_config import ModelConfig
 
 class ModelManager:
@@ -42,6 +42,13 @@ class ModelManager:
 
         x_train, x_test, y_train, y_test = cls.get_training_data(use_case_name)
         model = model_class()
+        
+        # Clustering
+        if use_case_name == 'data_clustering':
+            model.set_data(x_train, x_test)
+        else:
+            model.set_data(x_train, x_test, y_train, y_test)
+            
         model.set_data(x_train, x_test, y_train, y_test)
         model.train()
         cls._instance.models[use_case_name] = model
@@ -117,7 +124,8 @@ class ModelManager:
         usecase_factory = {
             'pawpularity_score': load_pawpularity_data,
             'occlusion_detection': load_occlusion_data,
-            'human_prediction': load_humanpred_data
+            'human_prediction': load_humanpred_data,
+            'data_clustering': load_clustering_data
         }
 
         load_data_function = usecase_factory.get(use_case_name)
