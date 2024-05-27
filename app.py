@@ -258,12 +258,12 @@ class Application(tk.Tk):
 
     def populate_metrics(self, frame):
         # Example use cases
-        use_cases = ['pawpularity_score', 'occlusion_detection', 'human_prediction']
+        use_cases = ['pawpularity_score', 'occlusion_detection', 'human_prediction', 'data_clustering']
         for use_case in use_cases:
             self.add_metrics_for_use_case(frame, use_case)
 
     def add_metrics_for_use_case(self, frame, use_case_name):
-        # Retrieve the evaluation results for a given use case
+    # Retrieve the evaluation results for a given use case
         evaluation_results = ModelManager.get_evaluation_results(use_case_name)
 
         # Display performance metrics
@@ -286,6 +286,35 @@ class Application(tk.Tk):
             canvas.draw()
             widget = canvas.get_tk_widget()
             widget.pack(fill=tk.BOTH, expand=True)
+            
+        if use_case_name == 'data_clustering':
+            kmeans_model = ModelManager._instance.models.get('data_clustering')
+            if kmeans_model:
+                elbow_fig = kmeans_model.plot_elbow_method()
+                elbow_canvas = FigureCanvasTkAgg(elbow_fig, master=frame)
+                elbow_canvas.draw()
+                elbow_widget = elbow_canvas.get_tk_widget()
+                elbow_widget.pack(fill=tk.BOTH, expand=True)
+                
+                clustering_info = f"K-Means Clustering Results: Clusters={len(set(kmeans_model.model.labels_))}"
+                clustering_label = tk.Label(frame, text=clustering_info)
+                clustering_label.pack(pady=10)
+                fig = kmeans_model.plot_clusters()
+                canvas = FigureCanvasTkAgg(fig, master=frame)
+                canvas.draw()
+                widget = canvas.get_tk_widget()
+                widget.pack(fill=tk.BOTH, expand=True)
+                
+                # Feature analysis
+                cluster_features = kmeans_model.feature_analysis()
+                feature_analysis_label = tk.Label(frame, text="Cluster Centers (Feature Averages):")
+                feature_analysis_label.pack(pady=10)
+                for col in cluster_features.columns:
+                    feature_text = f"{col}: {cluster_features[col].values}"
+                    feature_label = tk.Label(frame, text=feature_text)
+                    feature_label.pack(pady=5)
+
+
 
 if __name__ == "__main__":
     app = Application()

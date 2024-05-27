@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 def load_train_data():
     train_data = pd.read_csv("./data/train/train.csv")
@@ -54,3 +55,27 @@ def load_stacking_data():
 
 
     return {"x_train": x_train, "x_test": x_test, "y_train": y_train, "y_test": y_test}
+
+def load_clustering_data(sample_size = 20):
+    clustering_train_data = load_train_data()
+    
+    df = pd.DataFrame(clustering_train_data)
+    x = df.drop(['Id', 'Pawpularity'], axis = 1)
+    y = df['Pawpularity']
+    
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    
+    x_train = x_train.sample(n=sample_size, random_state=42)
+    x_test = x_test.sample(n=sample_size, random_state=42)
+    
+    scaler = StandardScaler()
+    x_train_scaled = scaler.fit_transform(x_train)
+    x_test_scaled = scaler.transform(x_test)
+
+    return {
+        'x_train': pd.DataFrame(x_train_scaled, columns=x.columns),
+        'x_test': pd.DataFrame(x_test_scaled, columns=x.columns),
+        'y_train': y_train,
+        'y_test': y_test
+    }
+    

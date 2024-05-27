@@ -7,6 +7,11 @@ from torch import nn, optim
 import torch
 from models.neural_network import Net
 from prediction_models.nn_human_prediction import HumanPredictionNN
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+import pandas as pd
+import seaborn as sns
 
 class BaseModel(ABC):
 
@@ -159,6 +164,86 @@ class NN_HumanModel(BaseModel):
         with torch.no_grad():
             predictions = self.model(x_to_predict).numpy().squeeze()
         return (predictions >= 0.5).astype(float)
+
+# K-Means Clustering Model
+class KMeansModel(BaseModel):
+    def __init__(self, n_clusters=3):
+        super().__init__()
+        self.n_clusters = n_clusters
+        self.model = KMeans(n_clusters=n_clusters)
+        self.pca = PCA(n_components=2)  # Reduce to 2 components for visualization
+        print('KMeans Clustering Model Initialized.\n')
+
+    def _train(self):
+        self.model.fit(self.data['x_train'])
+        self.pca.fit(self.data['x_train'])
+        print('\nKMeans clustering model trained.')
+
+    def predict(self, x_test=None):
+        x_to_predict = x_test if x_test is not None else self.data.get('x_test')
+        if x_to_predict is None:
+            raise ValueError("No test data available for prediction")
+        return self.model.predict(x_to_predict)
+
+    def set_data(self, x_train, x_test, y_train=None, y_test=None):
+        self.data['x_train'] = x_train
+        self.data['x_test'] = x_test
+        # Fit PCA during the set_data step
+        self.pca.fit(x_train)
+
+    def plot_clusters(self):
+        x_test = self.data['x_test']
+        labels = self.predict(x_test)
+        x_test_reduced = self.pca.transform(x_test)  # Reduce dimensions
+        fig, ax = plt.subplots(figsize=(8, 6))
+        
+        scatter = ax.scatter(x_test_reduced[:, 0], x_test_reduced[:, 1], c=labels, cmap='viridis', s=50, alpha=0.7)
+        ax.set_title("K-Means Clustering Results")
+        ax.set_xlabel("Principal Component 1")
+        ax.set_ylabel("Principal Component 2")
+        plt.colorbar(scatter, ax=ax, label='Cluster')
+        ax.grid(True)
+
+        # Annotate points with original indices
+        for i, (x, y) in enumerate(x_test_reduced):
+            ax.text(x, y, f"{i}", fontsize=8, ha='right', color='black')
+
+        return fig
+
+    def feature_analysis(self):
+        # Analyze cluster centers in the reduced PCA space
+        cluster_centers = self.model.cluster_centers_
+        cluster_centers_reduced = self.pca.transform(cluster_centers)
+        cluster_features = pd.DataFrame(cluster_centers_reduced, columns=['PC1', 'PC2'])
+        cluster_features['Cluster'] = range(self.n_clusters)
+        return cluster_features
+
+    def plot_feature_distributions(self):
+        labels = self.predict(self.data['x_test'])
+        df = self.data['x_test'].copy()
+        df['Cluster'] = labels
+        for feature in df.columns[:-1]:  # Skip the 'Cluster' column
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(x='Cluster', y=feature, data=df)
+            plt.title(f'Distribution of {feature} by Cluster')
+            plt.show()
+
+    def plot_elbow_method(self):
+        x_train = self.data['x_train']
+        sse = []
+        for k in range(1, 11):
+            kmeans = KMeans(n_clusters=k, random_state=42)
+            kmeans.fit(x_train)
+            sse.append(kmeans.inertia_)
+        
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.plot(range(1, 11), sse, marker='o')
+        ax.set_title('Elbow Method for Optimal k')
+        ax.set_xlabel('Number of clusters (k)')
+        ax.set_ylabel('Sum of squared errors (SSE)')
+        ax.grid(True)
+
+        return fig
 # Add more classes for other models following the same structure :-)
 
 class ConvolutionalNeuralNetworkModel(nn.Module):
@@ -182,4 +267,3 @@ class ConvolutionalNeuralNetworkModel(nn.Module):
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
         return x
-
