@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from sklearn.ensemble import StackingClassifier
+from sklearn.ensemble import AdaBoostClassifier, StackingClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier

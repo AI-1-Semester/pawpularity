@@ -9,7 +9,7 @@ class ModelConfig:
         'nn_pawpularity': NN_PawpularityModel,
         'nn_human': NN_HumanModel,
         'kmeans' : KMeansModel,
-        'ada_boost': AdaBoostModel
+        'ada_boost': AdaBoostModel,
         'stacked_model': StackedModel
     }
 
