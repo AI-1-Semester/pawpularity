@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import StackingClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 from metrics.performance_measure import calculate_performance_measure, calculate_accuracy
 from metrics.cross_validation  import CrossValidation
 from metrics.roc_curve import create_roc_curve
@@ -98,6 +101,30 @@ class LogisticRegressionModel(BaseModel):
     def _train(self):
         self.model.fit(self.data['x_train'], self.data['y_train'])
         print('\nLogistic regression model trained.')
+
+class StackedModel(BaseModel):
+
+    def __init__(self):
+        # List of tuples containing name and classifier (default hyperparameters)
+        models = [('Logistic Regression',LogisticRegression(max_iter=1000)),
+        ('Nearest Neighbors',KNeighborsClassifier()),
+        ('Decision Tree',DecisionTreeClassifier()),
+        ('Support Vector Classifier',SVC()),
+        ('Naive Bayes',GaussianNB()),
+        ('SVC Linear', SVC(kernel='linear'))]
+
+         # create stacking model
+        model = StackingClassifier(estimators=models, final_estimator=LogisticRegression(), cv=3)
+
+        super().__init__()
+        self.model = model
+        print('Stacked Model Initialized.\n')
+    
+    def _train(self):
+        self.model.fit(self.data['x_train'], self.data['y_train'])
+
+    def predict(self, x_test=None):
+        return super().predict(x_test)
 
 class NN_PawpularityModel(BaseModel):
     def __init__(self):
