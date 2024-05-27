@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.naive_bayes import GaussianNB
 from metrics.performance_measure import calculate_performance_measure, calculate_accuracy
 from metrics.cross_validation  import CrossValidation
 from metrics.roc_curve import create_roc_curve
@@ -131,6 +133,30 @@ class NN_PawpularityModel(BaseModel):
             predictions = self.model(x_to_predict).numpy()
         return predictions.squeeze()
     
+class AdaBoostModel(BaseModel):
+     def __init__(self):
+        super().__init__()
+        self.model = None
+        print('AdaBoost Model Initialized.\n')
+
+     def set_data(self, x_train, x_test, y_train, y_test):
+        super().set_data(x_train, x_test, y_train, y_test)
+        gnb = GaussianNB()
+        self.model = AdaBoostClassifier(gnb, n_estimators=100)
+
+     def _train(self):
+        self.model.fit(self.data['x_train'], self.data['y_train'])
+        print('\nAdaBoost model trained.')
+
+     def process_boosting_occlusion(self, input):
+        transformed_input = input.drop(['Occlusion'], axis=1)
+        occlusion_result = self.model.predict_proba(transformed_input)
+
+        result = (occlusion_result[0 , 1] * 100)
+        o_pred = self.model.predict(transformed_input)[0]
+
+        return {"occlusion_probability": result, "o_pred": o_pred}
+     
 class NN_HumanModel(BaseModel):
     def __init__(self):
         super().__init__()

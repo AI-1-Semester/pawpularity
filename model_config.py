@@ -1,6 +1,4 @@
-from pred_models.models import LinearRegressionModel, LogisticRegressionModel, NN_PawpularityModel, NN_HumanModel, KMeansModel
-
-
+from pred_models.models import LinearRegressionModel, LogisticRegressionModel, NN_PawpularityModel, NN_HumanModel, AdaBoostModel, KMeansModel
 
 class ModelConfig:
     # Maps model types to their corresponding class implementations
@@ -10,11 +8,12 @@ class ModelConfig:
         'nn_pawpularity': NN_PawpularityModel,
         'nn_human': NN_HumanModel,
         'kmeans' : KMeansModel,
+        'ada_boost': AdaBoostModel
     }
 
     # Maps use cases to the models that can be used for them
     use_case_models = {
-        'human_prediction': ['logistic_regression', 'nn_human'],
+        'human_prediction': ['logistic_regression','nn_human', 'ada_boost'],
         'pawpularity_score': ['linear_regression', 'nn_pawpularity'],
         'occlusion_detection': ['logistic_regression'],
         'data_clustering': ['kmeans'],
@@ -40,6 +39,7 @@ class ModelConfig:
     model_class_to_name = {
         LinearRegressionModel: 'linear_regression',
         LogisticRegressionModel: 'logistic_regression',
+        AdaBoostModel: 'ada_boost',
         NN_PawpularityModel: 'nn_pawpularity',
         NN_HumanModel: 'nn_human',
         KMeansModel: 'kmeans',
