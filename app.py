@@ -3,6 +3,7 @@ from tkinter import Frame
 import pandas as pd
 from PIL import Image, ImageTk
 from models.paw_picture import PawPicture
+from prediction_models.animal_prediction import predict_animal
 from prediction_models.occlusion_bagging_bayes import process_occlusion
 from prediction_models.occlusion_adaboost_bayes import process_boosting_occlusion
 from prediction_models.human_prediction import predict_human
@@ -52,7 +53,7 @@ class Application(tk.Tk):
         self.grid_manager.add_label(row=0, column=0, text="Machine Learning").grid(rowspan=1, columnspan=2)
 
     # ... (other methods remain the same but replace pack with grid using grid_manager)
-    def open_image_view(self, image_path, isHuman, pawpularity_score, occlusion_probability):
+    def open_image_view(self, image_path, isHuman, pawpularity_score, occlusion_probability, cat_vs_dog_prediction):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
@@ -75,6 +76,8 @@ class Application(tk.Tk):
             grid_manager.add_label(0, 1, f"Pawpularity Score: {pawpularity_score}", font=('Arial', 24))
         if occlusion_probability is not None:
             grid_manager.add_label(1, 1, f"Occlusion probability: {occlusion_probability}", font=('Arial', 24))
+        if cat_vs_dog_prediction:
+            grid_manager.add_label(2, 1, f"Animal: {cat_vs_dog_prediction}", font=('Arial', 24))
         
         # Add "Open Form" and "Back" buttons to the bottom
         grid_manager.add_button(3, 0, "Open Form").configure(command=self.close_image_and_open_form)
@@ -188,6 +191,7 @@ class Application(tk.Tk):
             # print to console
             # print("\n Occlusion probability: ", occlusion_result['occlusion_probability'], "%")
 
+
             # call the method from the prediction_model.py to find the imageId
             imageId = find_imageId(paw_predictions)
 
@@ -198,10 +202,11 @@ class Application(tk.Tk):
                 # call the method from the prediction_model.py to create the image path
                 imagepath = create_image_path(imageId)
 
+                cat_vs_dog_prediction = predict_animal(imagepath)
                 #print(imageId)
 
                 # Return to image view or wherever you want after submission    
-                self.open_image_view(imagepath, isHuman, paw_predictions, occlusion_predictions)
+                self.open_image_view(imagepath, isHuman, paw_predictions, occlusion_predictions, cat_vs_dog_prediction)
 
 
     def save_model_selections(self):

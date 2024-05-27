@@ -8,7 +8,6 @@ import torch
 from models.neural_network import Net
 from prediction_models.nn_human_prediction import HumanPredictionNN
 
-
 class BaseModel(ABC):
 
     def __init__(self):
@@ -160,3 +159,27 @@ class NN_HumanModel(BaseModel):
         with torch.no_grad():
             predictions = self.model(x_to_predict).numpy().squeeze()
         return (predictions >= 0.5).astype(float)
+# Add more classes for other models following the same structure :-)
+
+class ConvolutionalNeuralNetworkModel(nn.Module):
+    def __init__(self):
+        super(ConvolutionalNeuralNetworkModel, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3)
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
+        self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3)
+        self.fc1 = nn.Linear(128 * 6 * 6, 512)
+        self.fc2 = nn.Linear(512, 2)
+        print('Convolutional Neural Network Initialized.\n')
+
+    def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = torch.max_pool2d(x, 2)
+        x = torch.relu(self.conv2(x))
+        x = torch.max_pool2d(x, 2)
+        x = torch.relu(self.conv3(x))
+        x = torch.max_pool2d(x, 2)
+        x = x.view(-1, 128 * 6 * 6)
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
