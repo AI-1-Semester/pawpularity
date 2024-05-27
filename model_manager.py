@@ -107,6 +107,9 @@ class ModelManager:
 
     def evaluate_model(cls, prediction_results, use_case_name):
         model = cls._instance.models.get(use_case_name)
+        model_name = type(model).__name__
+
+        print("----------------", model_name)
         if model is None:
             raise ValueError(f"No model available for {use_case_name}")
 
@@ -114,7 +117,7 @@ class ModelManager:
             # Directly call the model's evaluate method with all required parameters
             evaluation_results = model.evaluate_model(
                 prediction_results,
-                ModelConfig.model_class_to_name.get(use_case_name),  # Pass the default model name for the ROC curve
+                model_name,  # Pass the model name for the ROC curve
                 use_case_name
             )
             model.evaluation_results = evaluation_results
