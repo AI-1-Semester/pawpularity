@@ -10,13 +10,14 @@ from metrics.cross_validation  import CrossValidation
 from metrics.roc_curve import create_roc_curve
 from torch import nn, optim
 import torch
-from models.neural_network import Net
 from prediction_models.nn_human_prediction import HumanPredictionNN
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 import pandas as pd
 import seaborn as sns
+
+from prediction_models.nn_pawpularity_prediction import Net
 
 class BaseModel(ABC):
 
