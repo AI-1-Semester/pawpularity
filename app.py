@@ -4,10 +4,8 @@ import pandas as pd
 from PIL import Image, ImageTk
 from models.paw_picture import PawPicture
 from prediction_models.animal_prediction import predict_animal
-from prediction_models.occlusion_bagging_bayes import process_occlusion
-from prediction_models.occlusion_adaboost_bayes import process_boosting_occlusion
 from prediction_models.human_prediction import predict_human
-from prediction_models.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
+from ui_helpers.image_helper import create_image_path, find_imageId
 from uiHelper import GridManager
 from model_manager import ModelManager
 from model_config import ModelConfig

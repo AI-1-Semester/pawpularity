@@ -16,8 +16,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 import pandas as pd
 import seaborn as sns
-
-from prediction_models.nn_pawpularity_prediction import Net
+from models.neural_network import Net
 
 class BaseModel(ABC):
 
