@@ -12,9 +12,9 @@ y_train = loaded_data['y_train']
 y_test = loaded_data['y_test']
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(x_train.shape[1], 100)
+        self.fc1 = nn.Linear(input_size, 100)
         self.fc2 = nn.Linear(100, 1)
 
     def forward(self, x):
@@ -25,7 +25,7 @@ class Net(nn.Module):
 x_train_tensor = torch.tensor(x_train.values).float()
 y_train_tensor = torch.tensor(y_train.values).float()
 
-model = Net()
+model = Net(input_size=x_train.shape[1])
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.01)
 

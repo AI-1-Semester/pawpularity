@@ -1,13 +1,11 @@
 import tkinter as tk
 from tkinter import Frame
 import pandas as pd
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 from models.paw_picture import PawPicture
 from prediction_models.animal_prediction import predict_animal
-from prediction_models.occlusion_bagging_bayes import process_occlusion
-from prediction_models.occlusion_adaboost_bayes import process_boosting_occlusion
 from prediction_models.human_prediction import predict_human
-from prediction_models.pawpularity_prediction import create_image_path, find_imageId, process_pawpularity
+from ui_helpers.image_helper import create_image_path, find_imageId
 from uiHelper import GridManager
 from model_manager import ModelManager
 from model_config import ModelConfig
@@ -52,10 +50,15 @@ class Application(tk.Tk):
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.grid_manager.add_label(row=0, column=0, text="Machine Learning").grid(rowspan=1, columnspan=2)
 
+    
+
     # ... (other methods remain the same but replace pack with grid using grid_manager)
     def open_image_view(self, image_path, isHuman, pawpularity_score, occlusion_probability, cat_vs_dog_prediction):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
+        
+        def format_array_values(array):
+            return [f"{val:.2f}" for val in array]
 
         # Set up the grid manager for the main frame
         grid_manager = GridManager(self.main_frame, rows=4, columns=2)
@@ -65,6 +68,11 @@ class Application(tk.Tk):
             grid_manager.add_label(0, 0, f"Is human {isHuman}", font=('Arial', 24))
         else:
             image = Image.open(image_path)
+            
+            fixed_image_size = (750, 750)
+            
+            image = ImageOps.pad(image, fixed_image_size, method=Image.LANCZOS, color=(255, 255, 255))  # Padding with white color
+
             displayImage = ImageTk.PhotoImage(image)
             # Keep a reference to the image to avoid garbage collection issues
             self.displayImage = displayImage
@@ -73,9 +81,11 @@ class Application(tk.Tk):
 
         # Add the Pawpularity Score and Occlusion probability labels to the right side (column 1)
         if pawpularity_score is not None:
-            grid_manager.add_label(0, 1, f"Pawpularity Score: {pawpularity_score}", font=('Arial', 24))
+            formatted_pawpularity_score = format_array_values(pawpularity_score)
+            grid_manager.add_label(0, 1, f"Pawpularity Score: {formatted_pawpularity_score}", font=('Arial', 24))
         if occlusion_probability is not None:
-            grid_manager.add_label(1, 1, f"Occlusion probability: {occlusion_probability}", font=('Arial', 24))
+            formatted_occlusion_probability = format_array_values(occlusion_probability)
+            grid_manager.add_label(1, 1, f"Occlusion probability: {formatted_occlusion_probability}", font=('Arial', 24))
         if cat_vs_dog_prediction:
             grid_manager.add_label(2, 1, f"Animal: {cat_vs_dog_prediction}", font=('Arial', 24))
         
