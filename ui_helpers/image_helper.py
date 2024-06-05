@@ -5,31 +5,14 @@
 
 from data.load_data import load_pawpularity_data
 from data.load_data import load_train_data
-from prediction_models.models import train_linear_regression_model, train_stacked_model
 
 # Load clean data
 train_data = load_train_data()
 
 # Load the processed data
 loaded_data = load_pawpularity_data()
-x_train = loaded_data['x_train']
-x_test = loaded_data['x_test']
 y_train = loaded_data['y_train']
-y_test = loaded_data['y_test']
 
-# use linear regression model
-linear_model = train_linear_regression_model(x_train, x_test, y_train, y_test , 'pawpularity_score')
-# stacked_model = train_stacked_model(x_train, x_test, y_train, y_test, 'pawpularity_score')
-
-# method to process the selection from the GUI
-def process_pawpularity(input):
-  print("\n User input data:", input)
-
-  pawpularity_result = linear_model['model'].predict(input)
-
-  # print to console
-  # print("\n Pawpularity result: ", pawpularity_result)
-  return pawpularity_result
 
 # method to find the imageId
 def find_imageId(pawpularity_result):
