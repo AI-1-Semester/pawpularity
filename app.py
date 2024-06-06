@@ -57,8 +57,13 @@ class Application(tk.Tk):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
         
-        def format_array_values(array):
-            return [f"{val:.2f}" for val in array]
+        def format_pawpularity_score(array):
+            return f"{float(array[0]):.2f}"
+
+        def format_occlusion_probability(array):
+            return f"{float(array[0])*100:.2f}%"
+        
+        
 
         # Set up the grid manager for the main frame
         grid_manager = GridManager(self.main_frame, rows=4, columns=2)
@@ -81,11 +86,11 @@ class Application(tk.Tk):
 
         # Add the Pawpularity Score and Occlusion probability labels to the right side (column 1)
         if pawpularity_score is not None:
-            formatted_pawpularity_score = format_array_values(pawpularity_score)
-            grid_manager.add_label(0, 1, f"Pawpularity Score: {formatted_pawpularity_score}", font=('Arial', 24))
+             formatted_pawpularity_score = format_pawpularity_score(pawpularity_score)
+             grid_manager.add_label(0, 1, f"Pawpularity Score: {formatted_pawpularity_score}", font=('Arial', 24))
         if occlusion_probability is not None:
-            formatted_occlusion_probability = format_array_values(occlusion_probability)
-            grid_manager.add_label(1, 1, f"Occlusion probability: {formatted_occlusion_probability}", font=('Arial', 24))
+             formatted_occlusion_probability = format_occlusion_probability(occlusion_probability)
+             grid_manager.add_label(1, 1, f"Occlusion probability: {formatted_occlusion_probability}", font=('Arial', 24))
         if cat_vs_dog_prediction:
             grid_manager.add_label(2, 1, f"Animal: {cat_vs_dog_prediction}", font=('Arial', 24))
         
