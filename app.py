@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import Frame
+import numpy as np
 import pandas as pd
 from PIL import Image, ImageTk, ImageOps
 from models.paw_picture import PawPicture
@@ -78,25 +79,34 @@ class Application(tk.Tk):
             self.displayImage = displayImage
             self.label = tk.Label(self.main_frame, image=self.displayImage)
             self.label.grid(row=0, column=0, rowspan=4, sticky="nsew")  # Image spans multiple rows
+            
+            
+            def format_single_or_array(value):
+                if isinstance(value, np.ndarray) and value.ndim == 0:
+                    value = value.item()
+                if isinstance(value, (list, np.ndarray)):
+                    return ", ".join([f"{val:.2f}" for val in value])
+                else:
+                    return f"{value:.2f}"
 
         # Add the Pawpularity Score and Occlusion probability labels to the right side (column 1)
         if pawpularity_score is not None:
-            formatted_pawpularity_score = format_array_values(pawpularity_score)
+            formatted_pawpularity_score = format_single_or_array(pawpularity_score)
             grid_manager.add_label(0, 1, f"Pawpularity Score: {formatted_pawpularity_score}", font=('Arial', 24))
         if occlusion_probability is not None:
-            formatted_occlusion_probability = format_array_values(occlusion_probability)
+            formatted_occlusion_probability = format_single_or_array(occlusion_probability)
             grid_manager.add_label(1, 1, f"Occlusion probability: {formatted_occlusion_probability}", font=('Arial', 24))
         if cat_vs_dog_prediction:
             grid_manager.add_label(2, 1, f"Animal: {cat_vs_dog_prediction}", font=('Arial', 24))
-        
-        # Add "Open Form" and "Back" buttons to the bottom
-        grid_manager.add_button(3, 0, "Open Form").configure(command=self.close_image_and_open_form)
-        grid_manager.add_button(3, 1, "Back").configure(command=self.close_image_and_initialize_main_view)
-        grid_manager.add_button(2, 0, "Metrics").configure(command=self.open_metrics)
+            
+            # Add "Open Form" and "Back" buttons to the bottom
+            grid_manager.add_button(3, 0, "Open Form").configure(command=self.close_image_and_open_form)
+            grid_manager.add_button(3, 1, "Back").configure(command=self.close_image_and_initialize_main_view)
+            grid_manager.add_button(2, 0, "Metrics").configure(command=self.open_metrics)
 
-        # Configure column widths to give more space to the image
-        self.main_frame.grid_columnconfigure(0, weight=3)  # Image column gets more space
-        self.main_frame.grid_columnconfigure(1, weight=1)  # Info column gets less space
+            # Configure column widths to give more space to the image
+            self.main_frame.grid_columnconfigure(0, weight=3)  # Image column gets more space
+            self.main_frame.grid_columnconfigure(1, weight=1)  # Info column gets less space
 
 
      # method to close the image and open the form
